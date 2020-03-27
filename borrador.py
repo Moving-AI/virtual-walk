@@ -8,7 +8,7 @@ N_FRAMES = 5
 THRESHOLD = 0.5
 cap = cv2.VideoCapture(0)
 rescale = output_dim[0] / INPUT_DIM[0], output_dim[1] / INPUT_DIM[1]
-path = r'models\posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
+path = r'./models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
 
 model, input_details, output_details = f.load_model(path)
 

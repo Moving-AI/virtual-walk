@@ -4,7 +4,7 @@ import numpy as np
 from utils.person import Person
 import utils.funciones as f
 
-path = r'models\posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
+path = r'./models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
 model, input_details, output_details = f.load_model(path)
 INPUT_DIM = (257, 257)
 original = (480, 640)

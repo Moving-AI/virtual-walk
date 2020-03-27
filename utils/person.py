@@ -158,14 +158,16 @@ class Person:
         cand = [kp for kp in self.keypoints[15:17] if kp.confidence > self.threshold]
         if len(cand) > 0 and self.keypoints[17].confidence > self.threshold:
             lowest_foot_y = sorted(cand, key=lambda x: -x.y)[0]
-            return self.keypoints[17].y - lowest_foot_y
+            print(self.keypoints[17].y, lowest_foot_y)
+            print(type(self.keypoints[17].y), type(lowest_foot_y))
+            return self.keypoints[17].y - lowest_foot_y.y
         else:
             return 0
 
 
     def infer_point(self, index, neck_prev, kp_prev):
         # Use the position of the neck and the same keypoint from the previous frame to infer this one. Same confidence
-        # is applied
+        # is appliedhttps://medium.com/@aaditya.chhabra/virtualenv-with-virtualenvwrapper-on-ubuntu-34850ab9e765
         xi = self.keypoints[17].x + kp_prev.x - neck_prev.x
         yi = self.keypoints[17].y + kp_prev.y - neck_prev.y
         self.keypoints[index] = KeyPoint(index, (xi, yi), kp_prev.confidence)

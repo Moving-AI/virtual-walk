@@ -4,7 +4,8 @@ import os
 import tensorflow as tf
 import numpy as np
 import json
-from person import Person
+from utils.person import Person
+
 
 
 def save_model_details(m):
@@ -26,7 +27,7 @@ def draw(person, img):
 
 
 model = tf.lite.Interpreter(
-    r'models\posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
+    r'./models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
 model.allocate_tensors()
 input_details = model.get_input_details()
 output_details = model.get_output_details()
