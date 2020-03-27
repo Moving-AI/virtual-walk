@@ -1,0 +1,6 @@
+*.jpg
+*.ipynb
+.ipynb_checkpoints
+data
+models
+*.txt
