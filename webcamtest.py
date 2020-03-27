@@ -1,13 +1,14 @@
 import cv2
-import tensorflow as tf
 import numpy as np
-from utils.person import Person
+import tensorflow as tf
+
 import utils.funciones as f
+from utils.person import Person
 
 path = r'models\posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
 model, input_details, output_details = f.load_model(path)
 INPUT_DIM = (257, 257)
-original = (480, 640)
+original = (640, 480)
 
 def video(output_dim=INPUT_DIM):
     cap = cv2.VideoCapture(0)
@@ -63,7 +64,7 @@ def from_txt(path):
 
 
 if __name__ == '__main__':
-    video(original)
-    # p = imagen()
+    # video(original)
+    p = imagen()
     # path = 'prueba.txt'
     # p = from_txt(path)
