@@ -1,3 +1,4 @@
+import logging
 import pickle
 from datetime import datetime
 from pathlib import Path
@@ -9,6 +10,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.optimizers import SGD
 
+logger = logging.getLogger(__name__)
 
 class FullModel:  # Not Model because it would shadow keras'
     def __init__(self, classes, load_path_PCA=None, load_path_NN=None, n_components=50, layers_NN=[50, 50], lr=0.01,
@@ -112,7 +114,7 @@ class FullModel:  # Not Model because it would shadow keras'
 
         with open(savepath, 'wb') as file:
             pickle.dump(self.PCA, file)
-        print('PCA model saved to ' + savepath)
+        logging.debug('PCA model saved to ' + savepath)
 
     @staticmethod
     def load_model(path_model):
@@ -127,7 +129,7 @@ class FullModel:  # Not Model because it would shadow keras'
 
     def save_NN(self, savepath):
         self.NN.save(savepath)
-        print('Neural network saved to ' + savepath)
+        logging.debug('Neural network saved to ' + savepath)
 
     def prepare_x_y(self, data):
         X = data[:, 0]
