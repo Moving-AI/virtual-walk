@@ -6,6 +6,7 @@ import logging
 from utils.person import Person
 from utils.funciones import read_labels_txt
 from pathlib import Path
+from itertools import chain 
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class DataProcessor():
                                                             self.output_details)
         return Person(output_data, offset_data, self.rescale, self.threshold)
     
-    def get_frame_groups(self,labels_path, actions, n=5):
+    def get_frame_groups(self, actions,labels_path = None, n=5):
         """From a labels path, a list of actions and a number of frames per
         training data row gets all posible groups of frames to process.
         
@@ -50,43 +51,95 @@ class DataProcessor():
         Returns:
             [type]: [description]
         """
+        if labels_path is None:
+            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
         frame_groups = {}
         self.people_dict = {}
         labels = read_labels_txt(labels_path, actions)
         for label in labels:
             #Groups of frames longer than n
-            valid_frame_interval = [group for group in labels[label] if group[1]-group[0]>= n-1]
-            lst = []
-            for frame_interval in valid_frame_interval:
-                lst += self.expanded_groups(frame_interval, n)
-            frame_groups[label] = lst
-        return frame_groups
-    def frame_interval_to_people_list(self,file, interval):
-        PATH = Path(__file__).parents[1].joinpath("resources/{}".format(file))
-        
-        return [self.process_frame(str(PATH)+"/{}_frame_{}.jpg".format(file, i))\
-            for i in range(interval[0], interval[1]+1)]
+            valid_frame_intervals = [group for group in labels[label] if group[1]-group[0]>= n-1]
+            #Transform each interval in a list of valid persons
+            frame_person_list = [self.get_valid_persons(label, interval, n) for interval in valid_frame_intervals]
+            #Get groups of n contiguous persons
+            valid_persons_groups = [self.valid_groups(lst, n) for lst in frame_person_list]
+            filter_nones = [element for element in valid_persons_groups if element is not None]
+            #Complete dictionary
+            frame_groups[label] = filter_nones
+
             
+        return frame_groups
+    
+    def get_valid_persons(self,file, interval, n):
+        persons_list = self.frame_interval_to_people_list(file, interval)
+        persons_list = [element for element in persons_list if element[1].H > 0]
+         
 
-
-        
-
-    def expanded_groups(self,frame_interval, n):
-        """[summary]
+    def frame_interval_to_people_list(self,file, interval):
+        """From an interval [start, end] of frames from video, returns a list
+        of tuples (index, person(i_Frame)).
         
         Args:
-            frame_interval (list): Iterval of valid frames
-            n (int): Sizew of the frame group
+            file (str): folder containing frames
+            interval (list): start and end of the interval
         
         Returns:
-            dict: for each video, the valid groups.
+            list: List of Persons calculated from images
         """
-        n_groups = (frame_interval[1]-frame_interval[0]+2)-n
+        PATH = Path(__file__).parents[1].joinpath("resources/{}".format(file))
         
-        return [list(range(frame_interval[0]+i, frame_interval[0]+n+i)) for i in range(n_groups)]
+        return [[i,self.process_frame(str(PATH)+"/{}_frame_{}.jpg".format(file, i))]\
+            for i in range(interval[0], interval[1]+1)]
+            
+    def valid_groups(self, lst, n):
+        """Given a list of persons, returns the valid lists of contiguous persons
+        (frames)
+        
+        Args:
+            n (int): Size of the desired lists of persons
+            lst (list): List of lists [int, Person]
+        """
+        valid, result, aux = 0 , [], []
+        if lst is not None:
+            for index, i in enumerate(lst):
+                if valid == 0:
+                    #New group
+                    aux.append(i)
+                    valid += 1
+                elif i[0] - aux[valid-1][0] == 1 and valid < n-1:
+                    #Value is valid
+                    aux.append(i)
+                    valid += 1
+                elif i[0] - aux[valid-1][0] == 1 and valid == n-1:
+                    #Group is now complete
+                    aux.append(i)
+                    result.append(aux) 
+                    aux = []
+                    valid = 0
+                else:
+                    aux = []
+                    valid = 0
+            return result
+        else: return None
 
-    def process_action(self):
-        pass
+        
+
+    #def expanded_groups(self,frame_interval, n):
+    #    """[summary]
+    #    
+    #    Args:
+    #        frame_interval (list): Iterval of valid frames
+    #        n (int): Sizew of the frame group
+    #    
+    #    Returns:
+    #        dict: for each video, the valid groups.
+    #    """
+    #    n_groups = (frame_interval[1]-frame_interval[0]+2)-n
+    #    
+    #    return [list(range(frame_interval[0]+i, frame_interval[0]+n+i)) for i in range(n_groups)]
+
+    #def process_action(self):
+    #    pass
         
 
     @staticmethod
@@ -102,7 +155,7 @@ class DataProcessor():
             Defaults to 2.
         """
         PATH = './resources/{}/'.format(filename.split(".")[0])
-        print(PATH)
+        #print(PATH)
         try:
             os.mkdir(PATH)
         except:
@@ -120,7 +173,7 @@ class DataProcessor():
             ret,frame = video.read()
             frame = cv2.resize(frame, (256,256))
             if count % fps_reduce == 0:
-                cv2.imwrite(PATH+"{}_frame_{}.jpg".format(filename.split(".")[0],count), frame)
+                cv2.imwrite(PATH+"{}_frame_{}.jpg".format(filename.split(".")[0],count//fps_reduce), frame)
             count = count + 1
             
             if cv2.waitKey(10) & 0xFF == ord('q'):
