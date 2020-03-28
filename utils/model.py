@@ -49,15 +49,15 @@ class FullModel:  # Not Model because it would shadow keras'
             self.PCA = self.load_model(load_path_PCA)
 
         if load_path_NN is None:
-            self.NN = self._get__NN(n_components, len(self.classes), layers_NN)
+            self.NN = self._get_NN(n_components, self.n_classes, layers_NN)
         else:
             self.NN = self.load_NN(load_path_NN)
         self._compile_NN(lr, decay, momentum)
 
         if tensorboard_path is not None:
-            self.callbacks = self.create_callbacks(tensorboard_path)
+            self.callbacks = [self.create_callbacks(tensorboard_path)]
         else:
-            self.callbacks = None
+            self.callbacks = []
 
     def predict(self, X):
         X_trans = self.predict_PCA(X)
@@ -80,8 +80,15 @@ class FullModel:  # Not Model because it would shadow keras'
         sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
         self.NN.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
+    def train(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, callbacks=[]):
+        self.train_PCA(X_train)
+        logging.info('Explained variance: {}'.format(self.get_explained_variance_ratio()))
+        X_pca = self.predict_PCA(X_train)
+        X_pca_test = self.predict_PCA(X_test)
+        self.train_NN(X_pca, Y_train, X_test=X_pca_test, Y_test=Y_test, batch_size=batch_size, epochs=epochs, is_one_hot=is_one_hot, callbacks=callbacks)
+
     def train_NN(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, savepath=None,
-                 verbose=0):
+                 verbose=0, callbacks=[]):
         '''
         Method to train the neural network.
         :param X_train, Y_train: ndarray. Training data. X contains the coordinates from PCA (shape (samples, n_components))
@@ -98,8 +105,10 @@ class FullModel:  # Not Model because it would shadow keras'
             Y_train = self.to_categorical(Y_train)
             Y_test = self.to_categorical(Y_test)
 
+        self.callbacks.extend(callbacks)
+
         self.NN.fit(X_train, Y_train, validation_data=(X_test, Y_test), batch_size=batch_size, epochs=epochs,
-                    callbacks=[self.callbacks], verbose=verbose)
+                    callbacks=self.callbacks, verbose=verbose)
 
         if X_test is not None:
             assert Y_test is not None, 'In order to evaluate the model Y_test must be passed to the training function'
@@ -117,7 +126,7 @@ class FullModel:  # Not Model because it would shadow keras'
         return [self.classes[i] for i in predicted_classes]
 
     @staticmethod
-    def _get__NN(input_dim, output_dim, layers):
+    def _get_NN(input_dim, output_dim, layers):
         '''
         Creation of the neural network.
         :param input_dim: integer.
@@ -159,14 +168,16 @@ class FullModel:  # Not Model because it would shadow keras'
         self.NN.save(savepath)
         logging.debug('Neural network saved to ' + savepath)
 
-    def prepare_x_y(self, data):
-        Y = data[:, 0]
-        X = data[:, 1:]
+    @staticmethod
+    def prepare_x_y(data):
+        Y = data[:, -1]
+        X = data[:, :-1]
         return X, Y
 
     @staticmethod
     def create_callbacks(path):
-        return tf.keras.callbacks.TensorBoard(log_dir=path, write_graph=True, histogram_freq=0, update_freq='epoch')
+        return tf.keras.callbacks.TensorBoard(log_dir=path, write_graph=True, histogram_freq=0, update_freq='epoch',
+                                              profile_batch=100000000)
 
     def get_explained_variance_ratio(self):
         return sum(self.PCA.explained_variance_ratio_)

@@ -1,24 +1,50 @@
-import cv2
-import utils.funciones as f
-import os
-from utils.person import Person
+import logging
+from datetime import datetime
+from pathlib import Path
+
+import numpy as np
+from sklearn.model_selection import train_test_split
+from tensorboard.plugins.hparams import api as hp
+
+from utils.model import FullModel
+
+FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter(FORMAT)
+logger.setLevel(logging.INFO)
+
+classes=['walk', 'stand', 'left', 'right']
+LR = 0.001
+components = 50
+decay = 1e-6
+momentum = 0.9
+current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+tb_path = Path(__file__).parents[0].joinpath('logs/{}/'.format(current_time))
+
+data = np.loadtxt('data/training_data.txt', delimiter=',', dtype=object)
+X, Y = FullModel.prepare_x_y(data)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+
+# model = FullModel(classes, tensorboard_path=tb_path, n_components=components, lr=LR, decay=momentum)
+# model.train(X_train, Y_train, X_test=X_test, Y_test=Y_test, batch_size=50, epochs=100)
 
 
-INPUT_DIM = (257, 257)
-output_dim = (480, 640)
-N_FRAMES = 5
-THRESHOLD = 0.5
-images_data = './data/images'
-labels_data = 'data/labels/'
-cap = cv2.VideoCapture(0)
-rescale = output_dim[0] / INPUT_DIM[0], output_dim[1] / INPUT_DIM[1]
-path_model = r'./models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
+HP_BATCH_SIZE = hp.HParam('batch_size', hp.Discrete([25, 50, 75, 100]))
+LR = [x / 1000 for x in range(1, 100, 1)]
+HP_LR = hp.HParam('learning rate', hp.Discrete(LR))
+METRIC_ACCURACY = 'accuracy'
 
-model, input_details, output_details = f.load_model(path_model)
+tb_path_0 = 'logs/' + current_time
 
-folders_data = [o for o in os.listdir(images_data) if os.path.isdir(os.path.join(images_data, o))]
-
-for folder in folders_data:
-    label = folder.split('_')[0]  # Folders must have ${label}_${num} format. Where num is just an identifier
-    images_names = [i for i in os.listdir(os.path.join(images_data, folder))]
-    images = [i[:-4] for i in images_names]
+session_num = 0
+for batch_size in HP_BATCH_SIZE.domain.values:
+    for lr in HP_LR.domain.values:
+        hparams = {
+            HP_BATCH_SIZE: batch_size,
+            HP_LR: lr
+        }
+        tb_path = tb_path_0 + '_' + str(session_num)
+        model = FullModel(classes, tensorboard_path=tb_path, lr=lr)
+        model.train(X_train, Y_train, X_test=X_test, Y_test=Y_test, batch_size=batch_size, epochs=100, callbacks=[hp.KerasCallback(tb_path, hparams)])
+        session_num += 1
