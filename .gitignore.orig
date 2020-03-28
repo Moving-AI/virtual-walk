@@ -5,7 +5,10 @@
 data
 models
 *.txt
+<<<<<<< HEAD
 utils/__pycache__
 resources/*
+=======
 .idea
 logs
+>>>>>>> origin/master
