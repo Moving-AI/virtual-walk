@@ -276,7 +276,7 @@ class DataProcessor():
 
 
     @staticmethod
-    def process_video(filename, output_shape = (256,256), fps_reduce = 2):
+    def process_video(filename, output_shape = (256,256), fps_reduce = 2, angle = 0):
         """Process a video from the resources folder and saves all the frames
         inside a folder with the name of the video
         FILENAME_frame_X.jpg
@@ -286,6 +286,7 @@ class DataProcessor():
             output_shape (tuple, optional): Size of the output images. Defaults to (256,256).
             fps_reduce (int, optional): Take one image out of  #fps_reduce. 
             Defaults to 2.
+            angle (int): Angle that the video images should be rotated. 
         """
         PATH = './resources/{}/'.format(filename.split(".")[0])
         #print(PATH)
@@ -307,7 +308,7 @@ class DataProcessor():
             frame = cv2.resize(frame, (256,256))
             #if DataProcessor.check_rotation("./resources/{}".format(filename)) is not None:
 
-            frame = imutils.rotate(frame, 270)
+            frame = imutils.rotate(frame, angle)
             
             if count % fps_reduce == 0:
                 cv2.imwrite(PATH+"{}_frame_{}.jpg".format(filename.split(".")[0],count//fps_reduce), frame)
