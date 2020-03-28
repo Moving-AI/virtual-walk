@@ -182,6 +182,13 @@ class Person:
         return np.array([kp.index for kp in self.keypoints if kp.confidence > self.threshold])
 
     def is_valid(self):
+        """This function determines if the frame should be considered for training.
+        Before it was embedded inside the pipeline of DataProcessor. Now it's a function,
+        so conditions can be changed based on performance.
+        
+        Returns:
+            bool: True if is valid
+        """
         return self.H > 0
 
 
