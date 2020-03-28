@@ -1,6 +1,9 @@
-from utils.person import Person
-import numpy as np
 import math
+
+import numpy as np
+
+from utils.person import Person
+
 
 class PersonMovement:
     def __init__(self, list_persons, times_v=10):
@@ -8,17 +11,25 @@ class PersonMovement:
         self.n_frames = len(list_persons)
         self.coords = self.get_vector(times_v)
 
-    def get_vector(self, times_v):
-        v = []
-
+    def get_vector(self, times_v, joints_remove=(0, 1, 2, 3, 4, 13, 14, 15, 16)):
+        '''
+        Get coordinates vector from a series of frames.
+        :param times_v: int. Times the body velocity is repeated in the resulting vector.
+        :param joints_remove: tuple. Joints that will be removed and not used in the final vector
+        :return: ndarray (1, N). Flattened vector of [x + v * times_v + v] dimensions. Where x and v are the flattened
+        vectors of joints positions and velocities.
+        '''
         xs = np.array([person.keypoints_positions for person in self.list_persons])
         hs = np.array([person.H for person in self.list_persons])
 
+        # Body velocity = neck velocity (index 17 before removing)
+        v = []
         for i_person in range(1, self.n_frames):
             vix = (self.list_persons[i_person].keypoints[17].x - self.list_persons[i_person - 1].keypoints[17].x) ** 2
             viy = (self.list_persons[i_person].keypoints[17].y - self.list_persons[i_person - 1].keypoints[17].y) ** 2
             v.append(math.sqrt(vix + viy))
 
+        xs = np.delete(xs, joints_remove, axis=1)
         avg_h = np.mean(hs)
         x = (xs - np.mean(xs)) / avg_h
         v = np.array(v / avg_h)

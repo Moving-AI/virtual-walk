@@ -39,7 +39,7 @@ def video(output_dim=INPUT_DIM):
 
 def imagen():
     rescale=(1,1)
-    img = cv2.imread('messi.jpg')
+    img = cv2.imread('messi.png')
     img2 = cv2.resize(img, INPUT_DIM, interpolation=cv2.INTER_LINEAR)
     img = tf.reshape(tf.image.resize(img, INPUT_DIM), [1, INPUT_DIM[0], INPUT_DIM[1], 3])
     img = (np.float32(img) - 127.5) / 127.5
