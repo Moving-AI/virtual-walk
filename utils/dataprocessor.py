@@ -1,17 +1,20 @@
-import utils.funciones as funciones
-import cv2
-import re
-import os
-import logging
-from utils.person import Person
-from utils.funciones import read_labels_txt
-from utils.person_frames import PersonMovement
+
+import cv2, re, os, logging, imutils, json
+import numpy as np
+import pandas as pd
 from pathlib import Path
 from itertools import chain
-import imutils
-import json
+from utils.person import Person
+from utils.funciones import read_labels_txt
+import utils.funciones as funciones
+from utils.person_frames import PersonMovement
 
+FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
+logging.basicConfig(format=FORMAT)
 logger = logging.getLogger(__name__)
+
+formatter = logging.Formatter(FORMAT)
+logger.setLevel(logging.INFO)
 
 class DataProcessor():
 
@@ -22,7 +25,92 @@ class DataProcessor():
         self.threshold = 0.5
         self.rescale = (1,1)
 
+    def training_file_writer(self, labels_path = None, output_file = None, append = False, n = 5, times_v = 10):
+        """This function is the main function inside DataProcessor file. It runs the whole pipeline, in this order:
+        - Gets actions and frame intervals from the labels file
+        - Processes the frame intervals, keeping only the valid ones.
+        - Groups the frames in groups of n
+        - Coordinates are calculated from those groups
+        - The coordinates are added to the output file in .csv format
+        
+        Args:
+            labels_path (str, optional): Absolute path of the labels file. If none is taken from
+            action-detection/resources.
+            output_file (str, optional): Absolute path of the output csv file. If none is saved into 
+            action-detection/resources/training_data.csv.
+            append (bool, optional): If True, the calculated coordinates are ADDED to the file
+            if it's not empty. Defaults to False.
+            n (int, optional): Number of frames to obtain coordinates from. Defaults to 5.
+            times_v (int, optional): Times point speed is introduced into coordinates. Defaults to 10.
+        
+        Returns:
+            pandas.DataFrame: DataFrame containing the obtained coordinates and the ones in output_file
+            if append = True
+        """
+        if labels_path is None:
+            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+        if output_file is None:
+            output_file = Path(__file__).parents[1].joinpath("resources/{}".format("training_data.csv"))
+        
+        #Obtain the dictionary of coordinates
+        coordinates_dict = self.get_coordinates(labels_path, n = n, times_v = times_v)
+        try:
+            if append:
+                df_initial = pd.read_csv(output_file)
+                df_list = [df_initial]
+            else:
+                df_list = []
+        except:
+            if append:
+                print("_________________________")
+                logger.warning("Append is set to true but the reading gave an exception")
+            df_list = []
+
+        for video in coordinates_dict:
+            if len(coordinates_dict[video]) == 0:
+                continue
+            else:
+                array = np.vstack(coordinates_dict[video])
+                df = pd.DataFrame(array)
+                action = video.split("_")[0]
+                df["action"] = [action]*len(coordinates_dict[video])
+                df_list.append(df)
+        cols_model_orig = [int(x) for x in list(df_list[-1].columns) if str(x).isnumeric()]
+        cols_model_target = [str(x) for x in cols_model_orig if str(x).isnumeric()]
+        mapper = {}
+        for orig, target in zip(cols_model_orig, cols_model_target):
+            mapper[orig] = target
+        
+        df_list = [df_iter.rename(mapper, axis = 'columns') for df_iter in df_list]
+        
+        logger.info("Concatenating {} DataFrames before writing.".format(len(df_list)))
+        
+        df = pd.concat(df_list, axis = 0, ignore_index = True)
+
+        df.to_csv(output_file, index=False)
+        return df
+
+
     def get_coordinates(self, labels_path=None, actions=None, n = 5, times_v = 10):
+        """This functions is a wrapper that makes this steps:
+        - Gets actions and frame intervals from the labels file
+        - Processes the frame intervals, keeping only the valid ones.
+        - Groups the frames in groups of n
+        - Coordinates are calculated from those groups
+        Args:
+            labels_path (str, optional): Absolute for the labels file. If none, it is searched inside
+            action-recognition/resources
+            actions (list, optional): Actions contained in the label file. If None, the program searches
+            them
+            n (int, optional): Lenght of the frame list to process. Defaults to 5.
+            times_v (int, optional): Times speeds of the points is introduced as coordinate. Defaults to 10.
+        
+        Returns:
+            dict: Dictionary that contains for each video in the labels file the coordinates after running the
+            frame selection pipeline.
+        """
+
+        logger.info("Calculating coordinates from labels_path {}".format(labels_path))
         if labels_path is None:
             labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
         else:
@@ -32,20 +120,16 @@ class DataProcessor():
         coordinates_dict = {}
         #print(frame_groups)
         for video in frame_groups:
+            logger.debug("Calculating coordinates for video {}".format(video))
             for group in frame_groups[video]:
                 if len(group) == 0:
                     continue
                 else:
-                    print("___________\n\n", group, "\n\n_________")
+                    
                     if video not in coordinates_dict: coordinates_dict[video] = []
                     persons = [element[1] for element in group]
-                    #print("Persons:",persons)
-                    #print(video, group)
-                    #print(json.dumps(coordinates_dict, indent = 4))
-                    #print(persons)
                     coordinates = PersonMovement(persons, times_v).coords
                     coordinates_dict[video].append(coordinates)
-                    #print(coordinates)
         return coordinates_dict
 
 
@@ -60,6 +144,7 @@ class DataProcessor():
         Returns:
             Person: Person associated to that frame.
         """
+        logger.debug("Processing frame {}".format(image_path.split("/")[-1]))
         frame = cv2.imread(image_path)
         frame = funciones.prepare_frame(frame, self.input_dim)
         output_data, offset_data = funciones.get_model_output(self.model,
@@ -82,11 +167,12 @@ class DataProcessor():
         Returns:
             [type]: [description]
         """
-        
+        logger.info("Getting frame groups for labels in {}".format(labels_path))
         frame_groups = {}
         self.people_dict = {}
         labels = read_labels_txt(str(labels_path), actions)
         for label in labels:
+            logger.debug("Getting grame groups for label {}".format(label))
             #Groups of frames longer than n
             valid_frame_intervals = [group for group in labels[label] if group[1]-group[0]>= n-1]
             #Transform each interval in a list of valid persons
@@ -98,17 +184,19 @@ class DataProcessor():
             frame_groups[label] = filter_nones
         #There is an undesired extra level in the lists generated. We remove it
         frame_groups_definitive = {}
+        logging.info("Cleaning frame groups.")
         for video in frame_groups:
             frame_groups_definitive[video] = list(chain.from_iterable(frame_groups[video]))    
         return frame_groups_definitive
     
-    def get_valid_persons(self,file, interval, n):
-        persons_list = self.frame_interval_to_people_list(file, interval)
+    def get_valid_persons(self,fle, interval, n):
+        logger.debug("Getting valid persons from file {}, interval {}".format(fle, interval))
+        persons_list = self.frame_interval_to_people_list(fle, interval)
         persons_list = [element for element in persons_list if element[1].is_valid()]
         return persons_list
          
 
-    def frame_interval_to_people_list(self,file, interval):
+    def frame_interval_to_people_list(self,fle, interval):
         """From an interval [start, end] of frames from video, returns a list
         of tuples (index, person(i_Frame)).
         
@@ -119,9 +207,10 @@ class DataProcessor():
         Returns:
             list: List of Persons calculated from images
         """
-        PATH = Path(__file__).parents[1].joinpath("resources/{}".format(file))
+        logger.debug("Calculating people list from interval {} in file {}".format(interval, fle))
+        PATH = Path(__file__).parents[1].joinpath("resources/{}".format(fle))
         
-        return [[i,self.process_frame(str(PATH)+"/{}_frame_{}.jpg".format(file, i))]\
+        return [[i,self.process_frame(str(PATH)+"/{}_frame_{}.jpg".format(fle, i))]\
             for i in range(interval[0], interval[1]+1)]
             
     def valid_groups(self, lst, n):
@@ -179,7 +268,7 @@ class DataProcessor():
     def find_actions(file):
         actions = set()
         regex = r"[a-z]+"
-        for i, line in enumerate(open(str(file))):
+        for line in open(str(file)):
             for match in re.finditer(regex, line):
                 #print('Found on line {}: {}'.format(i+1, match.group()))
                 actions.add(match.group())
