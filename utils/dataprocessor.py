@@ -5,9 +5,11 @@ import os
 import logging
 from utils.person import Person
 from utils.funciones import read_labels_txt
+from utils.person_frames import PersonMovement
 from pathlib import Path
-from itertools import chain 
-
+from itertools import chain
+import imutils
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,33 @@ class DataProcessor():
         self.input_dim = input_dim
         self.threshold = 0.5
         self.rescale = (1,1)
+
+    def get_coordinates(self, labels_path=None, actions=None, n = 5, times_v = 10):
+        if labels_path is None:
+            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+        else:
+            labels_path = Path(labels_path)
+        actions = DataProcessor.find_actions(labels_path)
+        frame_groups = self.get_frame_groups(actions, labels_path, n)
+        coordinates_dict = {}
+        #print(frame_groups)
+        for video in frame_groups:
+            for group in frame_groups[video]:
+                if len(group) == 0:
+                    continue
+                else:
+                    print("___________\n\n", group, "\n\n_________")
+                    if video not in coordinates_dict: coordinates_dict[video] = []
+                    persons = [element[1] for element in group]
+                    #print("Persons:",persons)
+                    #print(video, group)
+                    #print(json.dumps(coordinates_dict, indent = 4))
+                    #print(persons)
+                    coordinates = PersonMovement(persons, times_v).coords
+                    coordinates_dict[video].append(coordinates)
+                    #print(coordinates)
+        return coordinates_dict
+
 
 
     
@@ -39,9 +68,11 @@ class DataProcessor():
                                                             self.output_details)
         return Person(output_data, offset_data, self.rescale, self.threshold)
     
-    def get_frame_groups(self, actions,labels_path = None, n=5):
+    def get_frame_groups(self, actions,labels_path, n=5):
         """From a labels path, a list of actions and a number of frames per
         training data row gets all posible groups of frames to process.
+
+        Takes into consideration 
         
         Args:
             labels_path (str): Path to the labels.txt file
@@ -51,11 +82,10 @@ class DataProcessor():
         Returns:
             [type]: [description]
         """
-        if labels_path is None:
-            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+        
         frame_groups = {}
         self.people_dict = {}
-        labels = read_labels_txt(labels_path, actions)
+        labels = read_labels_txt(str(labels_path), actions)
         for label in labels:
             #Groups of frames longer than n
             valid_frame_intervals = [group for group in labels[label] if group[1]-group[0]>= n-1]
@@ -66,13 +96,16 @@ class DataProcessor():
             filter_nones = [element for element in valid_persons_groups if element is not None]
             #Complete dictionary
             frame_groups[label] = filter_nones
-
-            
-        return frame_groups
+        #There is an undesired extra level in the lists generated. We remove it
+        frame_groups_definitive = {}
+        for video in frame_groups:
+            frame_groups_definitive[video] = list(chain.from_iterable(frame_groups[video]))    
+        return frame_groups_definitive
     
     def get_valid_persons(self,file, interval, n):
         persons_list = self.frame_interval_to_people_list(file, interval)
-        persons_list = [element for element in persons_list if element[1].H > 0]
+        persons_list = [element for element in persons_list if element[1].is_valid()]
+        return persons_list
          
 
     def frame_interval_to_people_list(self,file, interval):
@@ -101,7 +134,7 @@ class DataProcessor():
         """
         valid, result, aux = 0 , [], []
         if lst is not None:
-            for index, i in enumerate(lst):
+            for i in lst:
                 if valid == 0:
                     #New group
                     aux.append(i)
@@ -140,7 +173,18 @@ class DataProcessor():
 
     #def process_action(self):
     #    pass
-        
+
+
+    @staticmethod
+    def find_actions(file):
+        actions = set()
+        regex = r"[a-z]+"
+        for i, line in enumerate(open(str(file))):
+            for match in re.finditer(regex, line):
+                #print('Found on line {}: {}'.format(i+1, match.group()))
+                actions.add(match.group())
+        return list(actions)
+
 
     @staticmethod
     def process_video(filename, output_shape = (256,256), fps_reduce = 2):
@@ -170,8 +214,12 @@ class DataProcessor():
             logger.debug("Reading frame {}/{} from file {}".format(count+1, video.get(cv2.CAP_PROP_FRAME_COUNT),filename))
             
             #Frame reading, reshaping and saving
-            ret,frame = video.read()
+            _,frame = video.read()
             frame = cv2.resize(frame, (256,256))
+            #if DataProcessor.check_rotation("./resources/{}".format(filename)) is not None:
+
+            frame = imutils.rotate(frame, 270)
+            
             if count % fps_reduce == 0:
                 cv2.imwrite(PATH+"{}_frame_{}.jpg".format(filename.split(".")[0],count//fps_reduce), frame)
             count = count + 1
@@ -183,3 +231,19 @@ class DataProcessor():
                 break
         logger.debug("Stop reading files.")
         video.release()
+    #@staticmethod
+    #def check_rotation(path_video_file):
+    ## this returns meta-data of the video file in form of a dictionary
+    #    meta_dict = ffmpeg.probe(path_video_file)
+#
+    #    # from the dictionary, meta_dict['streams'][0]['tags']['rotate'] is the key
+    #    # we are looking for
+    #    rotateCode = None
+    #    if int(meta_dict['streams'][0]['tags']['rotate']) == 90:
+    #        rotateCode = cv2.ROTATE_90_CLOCKWISE
+    #    elif int(meta_dict['streams'][0]['tags']['rotate']) == 180:
+    #        rotateCode = cv2.ROTATE_180
+    #    elif int(meta_dict['streams'][0]['tags']['rotate']) == 270:
+    #        rotateCode = cv2.ROTATE_90_COUNTERCLOCKWISE
+#
+    #    return rotateCode

@@ -18,7 +18,7 @@ def load_model(path):
 def prepare_frame(frame, input_dim):
     frame = tf.reshape(tf.image.resize(frame, input_dim), [1, input_dim[0], input_dim[1], 3])
     
-    print(frame.shape)
+    #print(frame.shape)
     frame = (np.float32(frame) - 127.5) / 127.5
     return frame
 
