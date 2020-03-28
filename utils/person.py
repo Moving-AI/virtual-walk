@@ -181,6 +181,9 @@ class Person:
     def low_confidence_keypoints(self):
         return np.array([kp.index for kp in self.keypoints if kp.confidence > self.threshold])
 
+    def is_valid(self):
+        return self.H > 0
+
 
 class KeyPoint:
     def __init__(self, index, pos, v):
