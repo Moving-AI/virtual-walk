@@ -1,6 +1,9 @@
 *.jpg
+*.png
 *.ipynb
 .ipynb_checkpoints
 data
 models
 *.txt
+.idea
+logs

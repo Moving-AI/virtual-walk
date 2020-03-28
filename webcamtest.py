@@ -1,13 +1,14 @@
 import cv2
-import tensorflow as tf
 import numpy as np
-from utils.person import Person
+import tensorflow as tf
+
 import utils.funciones as f
+from utils.person import Person
 
 path = r'models\posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
 model, input_details, output_details = f.load_model(path)
 INPUT_DIM = (257, 257)
-original = (480, 640)
+original = (640, 480)
 
 def video(output_dim=INPUT_DIM):
     cap = cv2.VideoCapture(0)
@@ -38,7 +39,7 @@ def video(output_dim=INPUT_DIM):
 
 def imagen():
     rescale=(1,1)
-    img = cv2.imread('messi.jpg')
+    img = cv2.imread('messi.png')
     img2 = cv2.resize(img, INPUT_DIM, interpolation=cv2.INTER_LINEAR)
     img = tf.reshape(tf.image.resize(img, INPUT_DIM), [1, INPUT_DIM[0], INPUT_DIM[1], 3])
     img = (np.float32(img) - 127.5) / 127.5
@@ -63,7 +64,7 @@ def from_txt(path):
 
 
 if __name__ == '__main__':
-    video(original)
-    # p = imagen()
+    # video(original)
+    p = imagen()
     # path = 'prueba.txt'
     # p = from_txt(path)

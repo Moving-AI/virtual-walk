@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 
 PARTS = {
     0: 'NOSE',
@@ -64,7 +64,7 @@ class Person:
             self.get_coords = self._get_coords
             self.get_limbs = self._get_limbs
 
-        self.keypoints_positions = self.get_keypoints_array(show_head)
+        self.keypoints_positions = self.get_keypoints_array()
 
     def get_keypoints(self, heatmaps, offsets, output_stride=32):
         scores = sigmoid(heatmaps)
@@ -155,10 +155,10 @@ class Person:
         keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 17: NECK.
         :return:
         '''
-        cand = [kp for kp in self.keypoints[15:17] if kp.confidence > self.threshold]
+        cand = [kp for kp in self.keypoints[11:13] if kp.confidence > self.threshold]
         if len(cand) > 0 and self.keypoints[17].confidence > self.threshold:
             lowest_foot_y = sorted(cand, key=lambda x: -x.y)[0]
-            return self.keypoints[17].y - lowest_foot_y
+            return self.keypoints[17].y - lowest_foot_y.y
         else:
             return 0
 
@@ -170,11 +170,8 @@ class Person:
         yi = self.keypoints[17].y + kp_prev.y - neck_prev.y
         self.keypoints[index] = KeyPoint(index, (xi, yi), kp_prev.confidence)
 
-    def get_keypoints_array(self, show_head):
-        if show_head:
-            return np.array([(kp.x, kp.y) for kp in self.keypoints])
-        else:
-            return np.array([(kp.x, kp.y) for kp in self.keypoints[5:]])
+    def get_keypoints_array(self):
+        return np.array([(kp.x, kp.y) for kp in self.keypoints])
 
     def low_confidence_keypoints(self):
         return np.array([kp.index for kp in self.keypoints if kp.confidence > self.threshold])
