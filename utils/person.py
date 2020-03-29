@@ -33,6 +33,11 @@ class Person:
         if path_txt is None:
             self.keypoints = self.get_keypoints(heatmap, offsets)
             self.keypoints.append(self._infer_neck())
+            self.threshold = threshold
+            # self.keypoints.append(self._infer_hip())
+            self.pose = self.infer_pose(self.keypoints) # This is useless for now TODO:CHANGE
+
+            self.inferred_points = [list(range(19))]
         else:
             self.keypoints = self.skeleton_from_txt(path_txt)
         # LIMBS
@@ -81,6 +86,9 @@ class Person:
         keypoints = [KeyPoint(i, pos, confidences[i]) for i, pos in enumerate(image_positions)]
 
         return keypoints
+
+    def infer_pose(self, coords):
+        return "Unknown"
 
     def _get_coords(self):
         return [kp.point() for kp in self.keypoints if kp.confidence > self.threshold]
@@ -150,23 +158,47 @@ class Person:
         keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 0: NOSE.
         :return:
         '''
-        cand_inf = [kp for kp in self.keypoints[11:13] if kp.confidence > self.threshold]
-        cand_sup = [kp for kp in self.keypoints[0:5] if kp.confidence > self.threshold]
-
-        if len(cand_inf) > 0 and len(cand_sup) > 0:
-            cand_inf_y = sorted(cand_inf, key=lambda x: -x.y)[0].y
-            cand_sup_y = sorted(cand_sup, key=lambda x: x.y)[0].y
-            return cand_inf_y - cand_sup_y
+        cand = [kp for kp in self.keypoints[11:13] if kp.confidence > self.threshold]
+        if len(cand) > 0 and self.keypoints[0].confidence > self.threshold:
+            lowest_foot_y = sorted(cand, key=lambda x: -x.y)[0]
+            return self.keypoints[0].y - lowest_foot_y.y
         else:
             return 0
 
+    def infer_lc_keypoints(self, prev_person):
+        """This function will be used when creating the frame groups.
+        It takes the Person of the previous frame and uses its keypoits
+        to infer the keypoints of "self".
+        If the keypoint has low confidence, the position of the keypoint
+        relative to the neck is used in the current person
 
-    def infer_point(self, index, neck_prev, kp_prev):
+        
+        Args:
+            prev_person (Person): The person from the current frame
+        """
+        [self.infer_point(index, prev_person) for index, kp in enumerate(self.keypoints)\
+            if self.keypoints[index].confidence < self.threshold and index in self.inferred_points]
+        self.get_height()
+        #for index, kp in enumerate(self.keypoints):
+        #    if kp.confidence < self.threshold:
+        #        self.infer_point(index, prev_person)
+        
+
+    def infer_point(self, index, prev_person):
+        """Use the position of the neck and the same keypoint from the previous frame to infer this one.
+        Same confidence is applied
+
+        Args:
+            index (int): Index of the keypoint to infer
+            prev_person (Person): Person from the previous frame
+        """
         # Use the position of the neck and the same keypoint from the previous frame to infer this one. Same confidence
-        # is appliedhttps://medium.com/@aaditya.chhabra/virtualenv-with-virtualenvwrapper-on-ubuntu-34850ab9e765
-        xi = self.keypoints[17].x + kp_prev.x - neck_prev.x
-        yi = self.keypoints[17].y + kp_prev.y - neck_prev.y
-        self.keypoints[index] = KeyPoint(index, (xi, yi), kp_prev.confidence)
+        # is applied
+        
+        if self.keypoints[index].confidence < self.threshold:
+            xi = self.keypoints[17].x + prev_person.keypoints[index].x - prev_person.keypoints[17].x
+            yi = self.keypoints[17].y + prev_person.keypoints[index].y - prev_person.keypoints[17].y
+            self.keypoints[index] = KeyPoint(index, (xi, yi), prev_person.keypoints[index].confidence)
 
     def get_keypoints_array(self):
         return np.array([(kp.x, kp.y) for kp in self.keypoints])
@@ -174,7 +206,7 @@ class Person:
     def low_confidence_keypoints(self):
         return np.array([kp.index for kp in self.keypoints if kp.confidence > self.threshold])
 
-    def is_valid(self):
+    def is_valid_first(self):
         """This function determines if the frame should be considered for training.
         Before it was embedded inside the pipeline of DataProcessor. Now it's a function,
         so conditions can be changed based on performance.
@@ -183,6 +215,10 @@ class Person:
             bool: True if is valid
         """
         return self.H > 0
+    
+    def is_valid_other(self):
+
+        return True
 
 
 class KeyPoint:
