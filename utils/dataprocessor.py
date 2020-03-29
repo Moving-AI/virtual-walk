@@ -24,8 +24,13 @@ logger.setLevel(logging.INFO)
 
 
 class DataProcessor:
-    def __init__(self, model_path, input_dim=(257, 257), threshold=0.5):
-        self.model, self.input_details, self.output_details = funciones.load_model(model_path)
+    def __init__(self, model_path = None, input_dim=(257, 257), threshold=0.5):
+        if model_path is None:
+            MODEL_PATH = Path(__file__).parents[1].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
+        else:
+            MODEL_PATH = model_path
+
+        self.model, self.input_details, self.output_details = funciones.load_model(MODEL_PATH)
         self.input_dim = input_dim
         self.threshold = threshold
         self.rescale = (1, 1)
