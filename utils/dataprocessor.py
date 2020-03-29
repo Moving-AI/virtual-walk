@@ -30,7 +30,7 @@ class DataProcessor:
         else:
             MODEL_PATH = model_path
 
-        self.model, self.input_details, self.output_details = funciones.load_model(MODEL_PATH)
+        self.model, self.input_details, self.output_details = funciones.load_model(str(MODEL_PATH))
         self.input_dim = input_dim
         self.threshold = threshold
         self.rescale = (1, 1)
