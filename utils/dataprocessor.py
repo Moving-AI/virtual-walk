@@ -191,7 +191,11 @@ class DataProcessor:
     def get_valid_persons(self, fle, interval, n):
         logger.debug("Getting valid persons from file {}, interval {}".format(fle, interval))
         persons_list = self.frame_interval_to_people_list(fle, interval)
-        persons_list = [element for element in persons_list if element[1].is_valid()]
+
+        #Now we return all the persons in the interval. Valids will be filtered
+        #Into consideration the position in the frame.
+
+        #persons_list = [element for element in persons_list if element[1].is_valid()]
         return persons_list
 
     def frame_interval_to_people_list(self, fle, interval):
@@ -221,21 +225,51 @@ class DataProcessor:
         """
         valid, result, aux = 0, [], []
         if lst is not None:
-            for i in lst:
-                if valid == 0:
+            for index, i in enumerate(lst):
+                
+                #if it's not the first frame --> Infer keypoints
+                #if valid > 0:
+                #    i[1].infer_lc_keypoints(lst[index-1][1])
+
+                #If is the first frame and the frame is valid
+                if valid == 0 and i[1].is_valid_first():
                     # New group
                     aux.append(i)
                     valid += 1
-                elif i[0] - aux[valid - 1][0] == 1 and valid < n - 1:
-                    # Value is valid
-                    aux.append(i)
-                    valid += 1
-                elif i[0] - aux[valid - 1][0] == 1 and valid == n - 1:
-                    # Group is now complete
-                    aux.append(i)
-                    result.append(aux)
-                    aux = []
-                    valid = 0
+
+                #If it's not the first and frames are contiguous
+                elif valid > 0 and i[0] - aux[valid - 1][0] == 1:
+                    
+
+                    # If this frame does not complete a group then append to aux
+                    if  valid < n - 1  and i[1].is_valid_other():
+                        i[1].infer_lc_keypoints(lst[index-1][1])
+                        # Value is valid
+                        aux.append(i)
+                        valid += 1
+                    # If this frame completes a group append the resutl
+                    elif  valid == n - 1  and i[1].is_valid_other():
+                        i[1].infer_lc_keypoints(lst[index-1][1])
+                        # Group is now complete
+                        aux.append(i)
+                        result.append(aux)
+                        aux = []
+                        valid = 0
+                    # If frames were contiguous, the frame was not valid as other, it becomes first frame if
+                    # valid as first frame
+                    elif i[1].is_valid_first():
+                        aux = [i]
+                        valid = 1
+                    # If the next frame is not valid_other and neither does valid_first, we will start
+                    # from scratch
+                    else:
+                        aux = []
+                        valid = 0
+                #If frames wew not contiguous and this frame is valid as first, we try that
+                elif valid > 0 and i[0] - aux[valid - 1][0] != 1 and i[1].is_valid_first():
+                    aux = [i]
+                    valid = 1
+                # In any other case, we will start from scratch
                 else:
                     aux = []
                     valid = 0
