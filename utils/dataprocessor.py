@@ -7,6 +7,7 @@ from pathlib import Path
 import cv2
 import imutils
 import numpy as np
+import os
 import pandas as pd
 
 import utils.funciones as funciones
@@ -28,6 +29,63 @@ class DataProcessor:
         self.input_dim = input_dim
         self.threshold = threshold
         self.rescale = (1, 1)
+
+    @staticmethod
+    def process_video(filename, input_path = None, output_path = None, output_shape=(257, 257), fps_reduce=2, angle=0):
+        """Process a video from the resources folder and saves all the frames
+        inside a folder with the name of the video
+        FILENAME_frame_X.jpg
+        
+        Args:
+            filename (str): Name of the video inside resources
+            output_shape (tuple, optional): Size of the output images. Defaults to (256,256).
+            fps_reduce (int, optional): Take one image out of  #fps_reduce. 
+            Defaults to 2.
+            angle (int): Angle that the video images should be rotated. 
+        """
+        if output_path is None:
+            OUTPUT_PATH = Path(__file__).parents[1].joinpath("resources/{}".format(filename))
+        else:
+            OUTPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
+
+        if output_path is None:
+            INPUT_PATH = Path(__file__).parents[1].joinpath("resources/")
+        else:
+            INPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
+
+
+        try:
+            os.mkdir(OUTPUT_PATH)
+        except:
+            os.system("rm -r {}".format(OUTPUT_PATH))
+            os.mkdir(OUTPUT_PATH)
+
+        # Read video
+        video = cv2.VideoCapture(INPUT_PATH)
+        count = 0
+        logger.debug("Started reading frames.")
+        while video.isOpened():
+            logger.debug(
+                "Reading frame {}/{} from file {}".format(count + 1, video.get(cv2.CAP_PROP_FRAME_COUNT), filename))
+
+            # Frame reading, reshaping and saving
+            _, frame = video.read()
+            frame = cv2.resize(frame, output_shape)
+            # if DataProcessor.check_rotation("./resources/{}".format(filename)) is not None:
+
+            frame = imutils.rotate(frame, angle)
+
+            if count % fps_reduce == 0:
+                cv2.imwrite(OUTPUT_PATH.format("{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce)), frame)
+            count = count + 1
+
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
+            if video.get(cv2.CAP_PROP_POS_FRAMES) == video.get(cv2.CAP_PROP_FRAME_COUNT):
+                # If the number of captured frames is equal to the total number of frames,
+                break
+        logger.debug("Stop reading files.")
+        video.release()
 
     def training_file_writer(self, labels_path=None, output_file=None, append=False, n=5, times_v=10):
         """This function is the main function inside DataProcessor file. It runs the whole pipeline, in this order:
@@ -53,20 +111,23 @@ class DataProcessor:
         """
         if labels_path is None:
             labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+        else:
+            labels_path = Path(labels_path)
         if output_file is None:
             output_file = Path(__file__).parents[1].joinpath("resources/{}".format("training_data.csv"))
+        else:
+            output_file = Path(output_file)
 
         # Obtain the dictionary of coordinates
-        coordinates_dict = self.get_coordinates(labels_path, n=n, times_v=times_v)
+        coordinates_dict = self.get_coordinates(str(labels_path), n=n, times_v=times_v)
         try:
             if append:
-                df_initial = pd.read_csv(output_file)
+                df_initial = pd.read_csv(str(output_file))
                 df_list = [df_initial]
             else:
                 df_list = []
         except:
             if append:
-                print("_________________________")
                 logger.warning("Append is set to true but the reading gave an exception")
             df_list = []
 
@@ -91,8 +152,8 @@ class DataProcessor:
 
         df = pd.concat(df_list, axis=0, ignore_index=True)
 
-        df.to_csv(output_file, index=False, header=False)
-        return df, df_list
+        df.to_csv(str(output_file), index=False, header=False)
+        return df
 
     def get_coordinates(self, labels_path=None, actions=None, n=5, times_v=10):
         """This functions is a wrapper that makes this steps:
@@ -197,7 +258,7 @@ class DataProcessor:
         #persons_list = [element for element in persons_list if element[1].is_valid()]
         return persons_list
 
-    def frame_interval_to_people_list(self, fle, interval):
+    def frame_interval_to_people_list(self, fle, interval, images_path = None):
         """From an interval [start, end] of frames from video, returns a list
         of tuples (index, person(i_Frame)).
         
@@ -209,7 +270,10 @@ class DataProcessor:
             list: List of Persons calculated from images
         """
         logger.debug("Calculating people list from interval {} in file {}".format(interval, fle))
-        PATH = Path(__file__).parents[1].joinpath("resources/{}".format(fle))
+        if images_path is None:
+            PATH = Path(__file__).parents[1].joinpath("resources/{}".format(fle))
+        else:
+            images_path = Path(images_path).joinpath("/{}".format(fle))
 
         return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i))] \
                 for i in range(interval[0], interval[1] + 1)]
@@ -238,6 +302,8 @@ class DataProcessor:
 
                 #If it's not the first and frames are contiguous
                 elif valid > 0 and i[0] - aux[valid - 1][0] == 1:
+                    
+
                     # If this frame does not complete a group then append to aux
                     if  valid < n - 1  and i[1].is_valid_other():
                         i[1].infer_lc_keypoints(lst[index-1][1])
@@ -297,55 +363,3 @@ class DataProcessor:
                 # print('Found on line {}: {}'.format(i+1, match.group()))
                 actions.add(match.group())
         return list(actions)
-
-    @staticmethod
-    def process_video(filename, output_shape=(257, 257), fps_reduce=2, angle=0):
-        """Process a video from the resources folder and saves all the frames
-        inside a folder with the name of the video
-        FILENAME_frame_X.jpg
-        
-        Args:
-            filename (str): Name of the video inside resources
-            output_shape (tuple, optional): Size of the output images. Defaults to (256,256).
-            fps_reduce (int, optional): Take one image out of  #fps_reduce. 
-            Defaults to 2.
-            angle (int): Angle that the video images should be rotated. 
-        """
-        PATH = './resources/{}/'.format(filename.split(".")[0])
-
-        try:
-            os.mkdir(PATH)
-        except:
-            os.system("rm -r ./resources/{}".format(filename.split(".")[0]))
-            os.mkdir(PATH)
-
-        # Read video
-        video = cv2.VideoCapture("./resources/{}".format(filename))
-        count = 0
-        logger.debug("Started reading frames.")
-        while video.isOpened():
-            logger.debug(
-                "Reading frame {}/{} from file {}".format(count + 1, video.get(cv2.CAP_PROP_FRAME_COUNT), filename))
-
-            # Frame reading, reshaping and saving
-            _, frame = video.read()
-            frame = cv2.resize(frame, output_shape)
-            # if DataProcessor.check_rotation("./resources/{}".format(filename)) is not None:
-
-            frame = imutils.rotate(frame, angle)
-
-            if count % fps_reduce == 0:
-                cv2.imwrite(PATH + "{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce), frame)
-            count = count + 1
-
-            if cv2.waitKey(10) & 0xFF == ord('q'):
-                break
-            if video.get(cv2.CAP_PROP_POS_FRAMES) == video.get(cv2.CAP_PROP_FRAME_COUNT):
-                # If the number of captured frames is equal to the total number of frames,
-                break
-        logger.debug("Stop reading files.")
-        video.release()
-
-if __name__ == '__main__':
-    c = DataProcessor(r'../models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
-    df, df_list=c.training_file_writer()
