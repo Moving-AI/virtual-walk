@@ -227,7 +227,7 @@ class DataProcessor:
         Returns:
             Person: Person associated to that frame.
         """
-        logger.debug("Processing frame {}".format(image_path.split("/")[-1]))
+        logger.debug("Processing frame passed to the function (live)."
         #frame = cv2.imread(image_path)
         frame = funciones.prepare_frame(frame, self.input_dim)
         output_data, offset_data = funciones.get_model_output(self.model,
