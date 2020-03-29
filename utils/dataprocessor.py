@@ -1,13 +1,14 @@
+import logging
+import os
+import re
 from itertools import chain
 from pathlib import Path
 
 import cv2
 import imutils
-import logging
 import numpy as np
 import os
 import pandas as pd
-import re
 
 import utils.funciones as funciones
 from utils.funciones import read_labels_txt
@@ -121,7 +122,6 @@ class DataProcessor:
         actions = DataProcessor.find_actions(labels_path)
         frame_groups = self.get_frame_groups(actions, labels_path, n)
         coordinates_dict = {}
-        # print(frame_groups)
         for video in frame_groups:
             logger.debug("Calculating coordinates for video {}".format(video))
             for group in frame_groups[video]:
@@ -130,7 +130,7 @@ class DataProcessor:
                 else:
                     if video not in coordinates_dict: coordinates_dict[video] = []
                     persons = [element[1] for element in group]
-                    coordinates = PersonMovement(persons, times_v).coords
+                    coordinates = PersonMovement(persons, times_v, joints_remove=(13, 14, 15, 16)).coords
                     coordinates_dict[video].append(coordinates)
         return coordinates_dict
 
@@ -257,9 +257,6 @@ class DataProcessor:
     #    
     #    return [list(range(frame_interval[0]+i, frame_interval[0]+n+i)) for i in range(n_groups)]
 
-    # def process_action(self):
-    #    pass
-
     @staticmethod
     def find_actions(file):
         actions = set()
@@ -284,7 +281,7 @@ class DataProcessor:
             angle (int): Angle that the video images should be rotated. 
         """
         PATH = './resources/{}/'.format(filename.split(".")[0])
-        # print(PATH)
+
         try:
             os.mkdir(PATH)
         except:
@@ -317,24 +314,3 @@ class DataProcessor:
                 break
         logger.debug("Stop reading files.")
         video.release()
-    # @staticmethod
-    # def check_rotation(path_video_file):
-    ## this returns meta-data of the video file in form of a dictionary
-    #    meta_dict = ffmpeg.probe(path_video_file)
-
-
-#
-#    # from the dictionary, meta_dict['streams'][0]['tags']['rotate'] is the key
-#    # we are looking for
-#    rotateCode = None
-#    if int(meta_dict['streams'][0]['tags']['rotate']) == 90:
-#        rotateCode = cv2.ROTATE_90_CLOCKWISE
-#    elif int(meta_dict['streams'][0]['tags']['rotate']) == 180:
-#        rotateCode = cv2.ROTATE_180
-#    elif int(meta_dict['streams'][0]['tags']['rotate']) == 270:
-#        rotateCode = cv2.ROTATE_90_COUNTERCLOCKWISE
-#
-#    return rotateCode
-
-if __name__ == '__main__':
-    DataProcessor.process_video('walk_1.MOV')
