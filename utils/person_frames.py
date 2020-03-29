@@ -6,12 +6,12 @@ from utils.person import Person
 
 
 class PersonMovement:
-    def __init__(self, list_persons, times_v=10):
+    def __init__(self, list_persons, times_v=10, joints_remove=(0, 1, 2, 3, 4, 13, 14, 15, 16)):
         self.list_persons = list_persons
         self.n_frames = len(list_persons)
-        self.coords = self.get_vector(times_v)
+        self.coords = self.get_vector(times_v, joints_remove)
 
-    def get_vector(self, times_v, joints_remove=(0, 1, 2, 3, 4, 13, 14, 15, 16)):
+    def get_vector(self, times_v, joints_remove):
         '''
         Get coordinates vector from a series of frames.
         :param times_v: int. Times the body velocity is repeated in the resulting vector.
@@ -53,4 +53,4 @@ if __name__ == '__main__':
     p2 = p
     list_p = [p, p, p, p, p]
     group = PersonMovement(list_p)
-    c = group.get_vector(10)
+    # c = group.get_vector(10)
