@@ -7,7 +7,6 @@ from pathlib import Path
 import cv2
 import imutils
 import numpy as np
-import os
 import pandas as pd
 
 import utils.funciones as funciones
@@ -314,3 +313,7 @@ class DataProcessor:
                 break
         logger.debug("Stop reading files.")
         video.release()
+
+if __name__ == '__main__':
+    c = DataProcessor(r'../models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
+    c.training_file_writer()
