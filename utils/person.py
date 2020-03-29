@@ -137,7 +137,7 @@ class Person:
     def _infer_neck(self):
         lshoulder = [kp for kp in self.keypoints if kp.body_part == 'LEFT_SHOULDER'][0]
         rshoulder = [kp for kp in self.keypoints if kp.body_part == 'RIGHT_SHOULDER'][0]
-        neckx, necky = rshoulder.x + lshoulder.x / 2, rshoulder.y + lshoulder.y / 2
+        neckx, necky = (rshoulder.x + lshoulder.x) / 2, (rshoulder.y + lshoulder.y) / 2
         confidence = min(lshoulder.confidence, rshoulder.confidence)
         neck = KeyPoint(17, (neckx, necky), confidence)
         return neck
@@ -145,7 +145,7 @@ class Person:
     def _infer_hip(self):
         lhip = [kp for kp in self.keypoints if kp.body_part == 'LEFT_HIP'][0]
         rhip = [kp for kp in self.keypoints if kp.body_part == 'RIGHT_HIP'][0]
-        hipx, hipy = lhip.x + rhip.x / 2, lhip.y + rhip.y / 2
+        hipx, hipy = (lhip.x + rhip.x) / 2, (lhip.y + rhip.y) / 2
         confidence = min(lhip.confidence, rhip.confidence)
         hip = KeyPoint(18, (hipx, hipy), confidence)
         return hip
