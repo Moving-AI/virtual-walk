@@ -217,6 +217,25 @@ class DataProcessor:
                                                               self.output_details)
         return Person(output_data, offset_data, self.rescale, self.threshold)
 
+    
+    def process_live_frame(self, frame):
+        """Receives a frame path and returns the person associated
+        
+        Args:
+            image_path (str): String containig the path of an image
+        
+        Returns:
+            Person: Person associated to that frame.
+        """
+        logger.debug("Processing frame {}".format(image_path.split("/")[-1]))
+        #frame = cv2.imread(image_path)
+        frame = funciones.prepare_frame(frame, self.input_dim)
+        output_data, offset_data = funciones.get_model_output(self.model,
+                                                              frame,
+                                                              self.input_details,
+                                                              self.output_details)
+        return Person(output_data, offset_data, self.rescale, self.threshold)
+
     def get_frame_groups(self, actions, labels_path, n=5):
         """From a labels path, a list of actions and a number of frames per
         training data row gets all posible groups of frames to process.
