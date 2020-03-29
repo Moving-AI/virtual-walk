@@ -5,5 +5,7 @@
 data
 models
 *.txt
+utils/__pycache__
+resources/*
 .idea
 logs
