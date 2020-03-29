@@ -152,13 +152,13 @@ class Person:
 
     def get_height(self):
         '''
-        keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 17: NECK.
+        keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 0: NOSE.
         :return:
         '''
         cand = [kp for kp in self.keypoints[11:13] if kp.confidence > self.threshold]
-        if len(cand) > 0 and self.keypoints[17].confidence > self.threshold:
+        if len(cand) > 0 and self.keypoints[0].confidence > self.threshold:
             lowest_foot_y = sorted(cand, key=lambda x: -x.y)[0]
-            return self.keypoints[17].y - lowest_foot_y.y
+            return self.keypoints[0].y - lowest_foot_y.y
         else:
             return 0
 
