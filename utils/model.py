@@ -7,15 +7,16 @@ import numpy as np
 import tensorflow as tf
 from sklearn.decomposition import PCA
 from tensorflow.keras import Model
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.layers import Dense, Input, Dropout
+from tensorflow.keras.optimizers import SGD, Adam
 
 logger = logging.getLogger(__name__)
 
 
 class FullModel:  # Not Model because it would shadow keras'
     def __init__(self, classes, load_path_PCA=None, load_path_NN=None, n_components=50, layers_NN=[50, 50], lr=0.01,
-                 decay=1e-6, momentum=0.9, tensorboard_path=None):
+                 dropout=0, optimizer='sgd', tensorboard_path=None):
         '''
         This model consists of a PCA and Neural Network. It has all the necessary methods to train and predict all the
         results.
@@ -49,15 +50,15 @@ class FullModel:  # Not Model because it would shadow keras'
             self.PCA = self.load_model(load_path_PCA)
 
         if load_path_NN is None:
-            self.NN = self._get__NN(n_components, len(self.classes), layers_NN)
+            self.NN = self._get_NN(n_components, self.n_classes, layers_NN, dropout)
         else:
             self.NN = self.load_NN(load_path_NN)
-        self._compile_NN(lr, decay, momentum)
+        self._compile_NN(optimizer, lr)
 
         if tensorboard_path is not None:
-            self.callbacks = self.create_callbacks(tensorboard_path)
+            self.callbacks = [self.create_callbacks(tensorboard_path)]
         else:
-            self.callbacks = None
+            self.callbacks = []
 
     def predict(self, X):
         X_trans = self.predict_PCA(X)
@@ -76,12 +77,25 @@ class FullModel:  # Not Model because it would shadow keras'
         else:
             return None
 
-    def _compile_NN(self, lr, decay, momentum):
-        sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
-        self.NN.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    def _compile_NN(self, optimizer, lr):
+        if optimizer == 'sgd':
+            opt = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
+        elif optimizer == 'adam':
+            opt = Adam(learning_rate=lr)
+        else:
+            raise ValueError('Not implemented compiler')
+        self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+
+    def train(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, callbacks=[]):
+        self.train_PCA(X_train)
+        logging.info('Explained variance: {}'.format(self.get_explained_variance_ratio()))
+        X_pca = self.predict_PCA(X_train)
+        X_pca_test = self.predict_PCA(X_test)
+        self.train_NN(X_pca, Y_train, X_test=X_pca_test, Y_test=Y_test, batch_size=batch_size, epochs=epochs,
+                      is_one_hot=is_one_hot, callbacks=callbacks)
 
     def train_NN(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, savepath=None,
-                 verbose=0):
+                 verbose=0, callbacks=[]):
         '''
         Method to train the neural network.
         :param X_train, Y_train: ndarray. Training data. X contains the coordinates from PCA (shape (samples, n_components))
@@ -98,8 +112,10 @@ class FullModel:  # Not Model because it would shadow keras'
             Y_train = self.to_categorical(Y_train)
             Y_test = self.to_categorical(Y_test)
 
+        self.callbacks.extend(callbacks)
+
         self.NN.fit(X_train, Y_train, validation_data=(X_test, Y_test), batch_size=batch_size, epochs=epochs,
-                    callbacks=[self.callbacks], verbose=verbose)
+                    callbacks=self.callbacks, verbose=verbose)
 
         if X_test is not None:
             assert Y_test is not None, 'In order to evaluate the model Y_test must be passed to the training function'
@@ -116,8 +132,7 @@ class FullModel:  # Not Model because it would shadow keras'
         predicted_classes = np.argmax(Y, axis=1)
         return [self.classes[i] for i in predicted_classes]
 
-    @staticmethod
-    def _get__NN(input_dim, output_dim, layers):
+    def _get_NN(self, input_dim, output_dim, layers, dropout):
         '''
         Creation of the neural network.
         :param input_dim: integer.
@@ -127,13 +142,20 @@ class FullModel:  # Not Model because it would shadow keras'
         :return: neural network model.
         '''
         inputs = Input(shape=(input_dim,))
-        x = Dense(layers[0], activation='relu')(inputs)
+        x = self._Dense(inputs, layers[0], dropout, 'relu')
         for layer in layers[1:]:
-            x = Dense(layer, activation='relu')(x)
+            x = self._Dense(x, layer, dropout, 'relu')
         outputs = Dense(output_dim, activation='sigmoid')(x)
 
         model = Model(inputs=inputs, outputs=outputs)
         return model
+
+    @staticmethod
+    def _Dense(x, dim, dropout, activation='relu'):
+        x = Dense(dim, activation=activation)(x)
+        if dropout != 0:
+            x = Dropout(dropout)(x)
+        return x
 
     def save_PCA(self, savepath):
         if savepath is None:
@@ -159,14 +181,15 @@ class FullModel:  # Not Model because it would shadow keras'
         self.NN.save(savepath)
         logging.debug('Neural network saved to ' + savepath)
 
-    def prepare_x_y(self, data):
-        Y = data[:, 0]
-        X = data[:, 1:]
+    @staticmethod
+    def prepare_x_y(data):
+        Y = data[:, -1]
+        X = data[:, :-1]
         return X, Y
 
     @staticmethod
     def create_callbacks(path):
-        return tf.keras.callbacks.TensorBoard(log_dir=path, write_graph=True, histogram_freq=0, update_freq='epoch')
+        return TensorBoard(log_dir=path, write_graph=True, histogram_freq=0, update_freq='epoch', profile_batch=100000000)
 
     def get_explained_variance_ratio(self):
         return sum(self.PCA.explained_variance_ratio_)
@@ -174,6 +197,7 @@ class FullModel:  # Not Model because it would shadow keras'
 
 if __name__ == '__main__':
     from random import randint
+
     data = np.random.random((100, 50))
     classes = ['walk', 'stand']
     labels = [classes[randint(0, len(classes) - 1)] for _ in range(data.shape[0])]
