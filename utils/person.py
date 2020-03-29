@@ -158,10 +158,13 @@ class Person:
         keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 0: NOSE.
         :return:
         '''
-        cand = [kp for kp in self.keypoints[11:13] if kp.confidence > self.threshold]
-        if len(cand) > 0 and self.keypoints[0].confidence > self.threshold:
-            lowest_foot_y = sorted(cand, key=lambda x: -x.y)[0]
-            return self.keypoints[0].y - lowest_foot_y.y
+        cand_inf = [kp for kp in self.keypoints[11:13] if kp.confidence > self.threshold]
+        cand_sup = [kp for kp in self.keypoints[0:5] if kp.confidence > self.threshold]
+
+        if len(cand_inf) > 0 and len(cand_sup) > 0:
+            cand_inf_y = sorted(cand_inf, key=lambda x: -x.y)[0].y
+            cand_sup_y = sorted(cand_sup, key=lambda x: x.y)[0].y
+            return cand_inf_y - cand_sup_y
         else:
             return 0
 

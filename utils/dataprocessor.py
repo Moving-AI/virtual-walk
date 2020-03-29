@@ -26,7 +26,7 @@ class DataProcessor:
     def __init__(self, model_path, input_dim=(257, 257), threshold=0.5):
         self.model, self.input_details, self.output_details = funciones.load_model(model_path)
         self.input_dim = input_dim
-        self.threshold = 0.5
+        self.threshold = threshold
         self.rescale = (1, 1)
 
     def training_file_writer(self, labels_path=None, output_file=None, append=False, n=5, times_v=10):
@@ -92,7 +92,7 @@ class DataProcessor:
         df = pd.concat(df_list, axis=0, ignore_index=True)
 
         df.to_csv(output_file, index=False, header=False)
-        return df
+        return df, df_list
 
     def get_coordinates(self, labels_path=None, actions=None, n=5, times_v=10):
         """This functions is a wrapper that makes this steps:
@@ -238,8 +238,6 @@ class DataProcessor:
 
                 #If it's not the first and frames are contiguous
                 elif valid > 0 and i[0] - aux[valid - 1][0] == 1:
-                    
-
                     # If this frame does not complete a group then append to aux
                     if  valid < n - 1  and i[1].is_valid_other():
                         i[1].infer_lc_keypoints(lst[index-1][1])
@@ -350,4 +348,4 @@ class DataProcessor:
 
 if __name__ == '__main__':
     c = DataProcessor(r'../models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
-    c.training_file_writer()
+    df, df_list=c.training_file_writer()
