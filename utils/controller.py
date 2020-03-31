@@ -76,19 +76,22 @@ class Controller:
         return {'walk': self.step_forward, 'left': self.rotate_left, 'right': self.rotate_right, 'stand': self.void}
 
     def perform_action(self, i_action):
-        '''
-        Perform an action given its index within self.classes
-        :param i_action: int. Index
-        '''
+        """Perform an action given its index within self.classes
+        
+        Args:
+            i_action (int): index of classes list
+        """
+
         action = self.classes[i_action]
         self.action_mapper[action]()
 
     def perform_action_name(self, action):
-        '''
-        Perform action given its name.
-        :param action: str. Name of the action to perform. As it uses a mapper, it must be one of
+        """Perform action given its name.
+        
+        Args:
+            action (str): Name of the action to perform. As it uses a mapper, it must be one of
         ['walk', 'stand', 'left', 'right']
-        '''
+        """
         self.action_mapper[action]()
 
 url = "https://www.google.es/maps/@41.6425054,-0.8932757,3a,86.3y,35.92h,83.74t/data=!3m6!1e1!3m4!1sB4DQl3bfNd-txTOR2bEjPg!2e0!7i16384!8i8192"
