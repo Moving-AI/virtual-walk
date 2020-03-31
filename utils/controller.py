@@ -6,21 +6,37 @@ from selenium.webdriver.common.keys import Keys
 
 
 class Controller:
-    def __init__(self, initial_url, classes, driver_path = None, time_rotation=0.5):
-        '''
-        Class to control the movement in Google Street View. It only works with Firefox
-        :param driver_path: str. The driver to where geckodriver is located.
-        :param initial_url: str. Position where the program is going to start.
-        :param classes: list. Generally, ['walk', 'stand', 'left', 'right'], but the program understands any order
-        :param time_rotation: The time associated to a single rotation
-        '''
+    def __init__(self, classes, initial_url = None, driver_path = None, time_rotation=0.5, coordinates = None):
+        """Class to control the movement in Google Street View. It only works with Firefox.
+        If there is no guess about where to start (initial_url or coordinates) it starts
+        in Zaragoza (Spain).
+        
+        Args:
+            classes (list): Generally, ['walk', 'stand', 'left', 'right'], 
+            but the program understands any order
+            initial_url (str, optional): Position where the program is going to start.
+            Defaults to None.
+            driver_path (str, optional): The driver to where geckodriver is located.
+            Defaults to None.
+            time_rotation (float, optional): The time associated to a single rotation.
+            Defaults to 0.5.
+            coordinates (tuple, optional): Coordinates to begin the walk. Defaults to None.
+        """
         if driver_path is None:
             self._driver = webdriver.Firefox()
         else:
             self._driver = webdriver.Firefox(executable_path=driver_path)
         time.sleep(5)
         self._driver.set_window_position(x=-10, y=0)
-        self._driver.get(initial_url)
+
+        if coordinates is not None:
+            URL = "https://www.google.com/maps/@?api=1&map_action=pano" + "&viewpoint={:.7f},{:.7f}".format(coordinates[0], coordinates[1])
+        elif initial_url is not None:
+            URL = initial_url
+        else:
+            URL = "https://www.google.es/maps/@41.6425054,-0.8932757,3a,86.3y,35.92h,83.74t/data=!3m6!1e1!3m4!1sB4DQl3bfNd-txTOR2bEjPg!2e0!7i16384!8i8192"
+        
+        self._driver.get(URL)
         self.prepare_maps()
         self.classes = classes
         self.time_rotation = time_rotation
