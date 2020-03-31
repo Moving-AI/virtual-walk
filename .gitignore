@@ -10,3 +10,6 @@ resources/*
 .idea
 logs
 .vscode
+*.zip
+*.exe
+*.log
