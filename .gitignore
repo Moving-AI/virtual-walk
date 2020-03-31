@@ -12,4 +12,3 @@ logs
 *.zip
 *.exe
 *.log
-logs_gridsearch
