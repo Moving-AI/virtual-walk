@@ -9,3 +9,6 @@ utils/__pycache__
 resources/*
 .idea
 logs
+*.zip
+*.exe
+*.log

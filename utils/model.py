@@ -193,26 +193,3 @@ class FullModel:  # Not Model because it would shadow keras'
 
     def get_explained_variance_ratio(self):
         return sum(self.PCA.explained_variance_ratio_)
-
-
-if __name__ == '__main__':
-    from random import randint
-
-    data = np.random.random((100, 50))
-    classes = ['walk', 'stand']
-    labels = [classes[randint(0, len(classes) - 1)] for _ in range(data.shape[0])]
-    data_labels = np.empty((data.shape[0], data.shape[1] + 1), dtype=object)
-    data_labels[:, 0] = labels
-    data_labels[:, 1:] = data
-
-    current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-    tb_path = Path(__file__).parents[1].joinpath('logs/{}/'.format(current_time))
-
-    m = FullModel(classes, tensorboard_path=tb_path, n_components=10)
-
-    X, Y = m.prepare_x_y(data_labels)
-    m.train_PCA(X)
-    X_pca = m.predict_PCA(X)
-    m.train_NN(X_pca, Y, X_test=X_pca, Y_test=Y, batch_size=20, epochs=20, verbose=2)
-
-    m.predict(X)
