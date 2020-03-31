@@ -1,6 +1,7 @@
 from utils.model import FullModel
 from utils.dataprocessor import DataProcessor 
 from utils.person_frames import PersonMovement
+from utils.controller import Controller
 
 from pathlib import Path
 import cv2
@@ -17,7 +18,7 @@ logger.setLevel(logging.INFO)
 
 class WebcamPredictor():
 
-    def __init__(self, pca_model_path = None, nn_model_path = None, pose_model_path = None):
+    def __init__(self, pca_model_path = None, nn_model_path = None, pose_model_path = None, coordinates = None):
 
         self.n_frames = 5
 
@@ -42,7 +43,12 @@ class WebcamPredictor():
         )
         #print("creo processor")
         self.processor = DataProcessor(POSE_PATH)
-
+        
+        if coordinates is not None:
+            self.controller = Controller(["walk", "stand", "left", "right"],
+            coordinates=coordinates)
+        else:
+            self.controller = Controller(["walk", "stand", "left", "right"])
 
     def predictor(self, output_dim  =None):
         
