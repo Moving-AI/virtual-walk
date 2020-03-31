@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 
 
 class Controller:
-    def __init__(self, driver_path, initial_url, classes, time_rotation=0.5):
+    def __init__(self, initial_url, classes, driver_path = None, time_rotation=0.5):
         '''
         Class to control the movement in Google Street View. It only works with Firefox
         :param driver_path: str. The driver to where geckodriver is located.
@@ -14,7 +14,11 @@ class Controller:
         :param classes: list. Generally, ['walk', 'stand', 'left', 'right'], but the program understands any order
         :param time_rotation: The time associated to a single rotation
         '''
-        self._driver = webdriver.Firefox(executable_path=driver_path)
+        if driver_path is None:
+            self._driver = webdriver.Firefox()
+        else:
+            self._driver = webdriver.Firefox(executable_path=driver_path)
+        time.sleep(5)
         self._driver.set_window_position(x=-10, y=0)
         self._driver.get(initial_url)
         self.prepare_maps()
