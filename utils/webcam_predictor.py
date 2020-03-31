@@ -4,7 +4,16 @@ from utils.person_frames import PersonMovement
 
 from pathlib import Path
 import cv2
+import logging
 from copy import deepcopy
+
+FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger(__name__)
+
+formatter = logging.Formatter(FORMAT)
+logger.setLevel(logging.INFO)
+
 
 class WebcamPredictor():
 
@@ -57,9 +66,8 @@ class WebcamPredictor():
                 buffer.append(person)
                 buffer_og.append(person)
                 valid += 1
-
+            
             elif 0 < valid < self.n_frames -1 and person.is_valid_other():
-                
                 # If valid as first, take into account for future frames
                 if person.is_valid_first():
                     buffer_og.append(deepcopy(person))
@@ -92,11 +100,13 @@ class WebcamPredictor():
                     buffer = []
                     valid = 0
             elif person.is_valid_first():
+                
                 buffer = [person]
                 buffer_og = [person]
-                valid += 1
+                valid = 1
             
             else:
+                
                 buffer = []
                 valid = 0
             
@@ -109,7 +119,7 @@ class WebcamPredictor():
 
     def process_list(self, buffer):
         person_movement = PersonMovement(buffer)
-
+        
         print(type(person_movement.coords))
             
             
