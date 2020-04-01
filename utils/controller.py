@@ -26,7 +26,7 @@ class Controller:
             self._driver = webdriver.Firefox()
         else:
             self._driver = webdriver.Firefox(executable_path=driver_path)
-        time.sleep(5)
+        
         self._driver.set_window_position(x=-10, y=0)
 
         if coordinates is not None:
@@ -37,6 +37,7 @@ class Controller:
             URL = "https://www.google.es/maps/@41.6425054,-0.8932757,3a,86.3y,35.92h,83.74t/data=!3m6!1e1!3m4!1sB4DQl3bfNd-txTOR2bEjPg!2e0!7i16384!8i8192"
         
         self._driver.get(URL)
+        time.sleep(5)
         self.prepare_maps()
         self.classes = classes
         self.time_rotation = time_rotation

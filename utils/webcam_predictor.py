@@ -6,6 +6,7 @@ from utils.controller import Controller
 from pathlib import Path
 import cv2
 import logging
+import time
 from copy import deepcopy
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
@@ -18,7 +19,9 @@ logger.setLevel(logging.INFO)
 
 class WebcamPredictor():
 
-    def __init__(self, pca_model_path = None, nn_model_path = None, pose_model_path = None, coordinates = None):
+    def __init__(self, classes = ["walk", "stand", "left", "right"], pca_model_path = None,
+    nn_model_path = None, pose_model_path = None, scaler_model_path = None,
+    coordinates = None, default_limit = None):
 
         self.n_frames = 5
 
@@ -35,20 +38,32 @@ class WebcamPredictor():
             POSE_PATH = Path(__file__).parents[1].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
         else:
             POSE_PATH = pose_model_path
+        
+        if scaler_model_path is not None:
+            SCALER_PATH = Path(scaler_model_path)
+        else:
+            SCALER_PATH = Path(__file__).parents[1].joinpath("models/SCALER.pkl")
+
 
         self.model = FullModel(
-            classes = ["walk", "stand", "left", "right"],
+            classes = classes,
             load_path_PCA = str(PCA_PATH),
-            load_path_NN = str(NN_PATH)
+            load_path_NN = str(NN_PATH),
+            load_path_scaler=str(SCALER_PATH)
         )
         #print("creo processor")
         self.processor = DataProcessor(POSE_PATH)
         
         if coordinates is not None:
-            self.controller = Controller(["walk", "stand", "left", "right"],
-            coordinates=coordinates)
+            self.controller = Controller(classes, coordinates=coordinates)
         else:
-            self.controller = Controller(["walk", "stand", "left", "right"])
+            self.controller = Controller(classes)
+        
+        if default_limit is None:
+            default_limit = 0.5
+        
+        initial_time = time.time()
+        self.last_calls = {element:[time, 0.5] for element in classes}
 
     def predictor(self, output_dim  =None):
         
@@ -125,8 +140,15 @@ class WebcamPredictor():
 
     def process_list(self, buffer):
         person_movement = PersonMovement(buffer)
+        #print(type(person_movement.coords))
+        #print(person_movement.coords.shape)
         
-        print(type(person_movement.coords))
+        prediction = self.model.predict(person_movement.coords)
+        if time.time() - self.last_calls[prediction][0] > self.last_calls[prediction][1]:
+            self.last_calls[prediction][0] = time.time()
+            self.controller.perform_action_name(prediction)
+        print(prediction)
+        #print(type(person_movement.coords))
             
             
             

@@ -6,7 +6,7 @@ from utils.person import Person
 
 
 class PersonMovement:
-    def __init__(self, list_persons, times_v=10, joints_remove=(0, 1, 2, 3, 4, 13, 14, 15, 16)):
+    def __init__(self, list_persons, times_v=10, joints_remove=(13, 14, 15, 16)):
         self.list_persons = list_persons
         self.n_frames = len(list_persons)
         self.coords = self.get_vector(times_v, joints_remove)
