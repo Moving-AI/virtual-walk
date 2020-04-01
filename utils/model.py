@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
+from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from tensorflow.keras import Model
 from tensorflow.keras.callbacks import TensorBoard
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class FullModel:  # Not Model because it would shadow keras'
-    def __init__(self, classes, load_path_PCA=None, load_path_NN=None, n_components=50, layers_NN=[50, 50], lr=0.01,
+    def __init__(self, classes, load_path_scaler=None, load_path_PCA=None, load_path_NN=None, n_components=50, layers_NN=[50, 50], lr=0.01,
                  dropout=0, optimizer='sgd', tensorboard_path=None):
         '''
         This model consists of a PCA and Neural Network. It has all the necessary methods to train and predict all the
@@ -44,6 +45,11 @@ class FullModel:  # Not Model because it would shadow keras'
         '''
         self.classes = classes
         self.n_classes = len(classes)
+        if load_path_scaler is None:
+            self.scaler = preprocessing.StandardScaler()
+        else:
+            self.scaler = self.load_model(load_path_scaler)
+
         if load_path_PCA is None:
             self.PCA = PCA(n_components)
         else:
@@ -61,9 +67,18 @@ class FullModel:  # Not Model because it would shadow keras'
             self.callbacks = []
 
     def predict(self, X):
-        X_trans = self.predict_PCA(X)
+        X_scaler = self.predict_scaler(X)
+        X_trans = self.predict_PCA(X_scaler)
         predicted_class = self.predict_NN(X_trans)
         return predicted_class
+
+    def train_scaler(self, X, savepath=None):
+        self.scaler.fit(X)
+        if savepath is not None:
+            self.save_scaler(savepath)
+
+    def predict_scaler(self, X):
+        return self.scaler.transform(X)
 
     def train_PCA(self, X, savepath=None):
         self.PCA.fit(X)
@@ -79,7 +94,7 @@ class FullModel:  # Not Model because it would shadow keras'
 
     def _compile_NN(self, optimizer, lr):
         if optimizer == 'sgd':
-            opt = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)
+            opt = SGD(lr=lr, decay=3e-5, momentum=0.9, nesterov=True)
         elif optimizer == 'adam':
             opt = Adam(learning_rate=lr)
         else:
@@ -87,10 +102,15 @@ class FullModel:  # Not Model because it would shadow keras'
         self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
     def train(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, callbacks=[]):
-        self.train_PCA(X_train)
+        self.train_scaler(X_train)
+        X_scaled = self.predict_scaler(X_train)
+        X_scaled_test = self.predict_scaler(X_test)
+
+        self.train_PCA(X_scaled)
         logging.info('Explained variance: {}'.format(self.get_explained_variance_ratio()))
-        X_pca = self.predict_PCA(X_train)
-        X_pca_test = self.predict_PCA(X_test)
+        X_pca = self.predict_PCA(X_scaled)
+        X_pca_test = self.predict_PCA(X_scaled_test)
+
         self.train_NN(X_pca, Y_train, X_test=X_pca_test, Y_test=Y_test, batch_size=batch_size, epochs=epochs,
                       is_one_hot=is_one_hot, callbacks=callbacks)
 
@@ -152,10 +172,19 @@ class FullModel:  # Not Model because it would shadow keras'
 
     @staticmethod
     def _Dense(x, dim, dropout, activation='relu'):
-        x = Dense(dim, activation=activation)(x)
+        x = Dense(dim, activation=activation, kernel_initializer='he_normal', bias_initializer='he_normal')(x)
         if dropout != 0:
             x = Dropout(dropout)(x)
         return x
+
+    def save_scaler(self, savepath):
+        if savepath is None:
+            current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+            savepath = Path(__file__).parents[1].joinpath('models/scaler_{}.pkl'.format(current_time))
+
+        with open(savepath, 'wb') as file:
+            pickle.dump(self.scaler, file)
+        logging.debug('Scaler model saved to ' + savepath)
 
     def save_PCA(self, savepath):
         if savepath is None:
@@ -183,13 +212,14 @@ class FullModel:  # Not Model because it would shadow keras'
 
     @staticmethod
     def prepare_x_y(data):
-        Y = data[:, -1]
-        X = data[:, :-1]
+        Y = data[:, -1].astype('str')
+        X = data[:, :-1].astype('f')
         return X, Y
 
     @staticmethod
     def create_callbacks(path):
-        return TensorBoard(log_dir=path, write_graph=True, histogram_freq=0, update_freq='epoch', profile_batch=100000000)
+        return TensorBoard(log_dir=path, write_graph=True, histogram_freq=5, update_freq='epoch', profile_batch=100000000,
+                           write_grads=True)
 
     def get_explained_variance_ratio(self):
         return sum(self.PCA.explained_variance_ratio_)
