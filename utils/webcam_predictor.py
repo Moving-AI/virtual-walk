@@ -21,9 +21,10 @@ logger.setLevel(logging.INFO)
 class WebcamPredictor:
     def __init__(self, classes=["walk", "stand", "left", "right"], pca_model_path=None,
                  nn_model_path=None, pose_model_path=None, scaler_model_path=None,
-                 coordinates=None, default_limit=None, driver_path=None):
+                 coordinates=None, default_limit=None, driver_path=None, threshold_nn=0.5):
 
         self.n_frames = 5
+        self.threshold_nn = threshold_nn
 
         if pca_model_path is not None:
             PCA_PATH = Path(pca_model_path)
@@ -65,7 +66,7 @@ class WebcamPredictor:
         initial_time = time.time()
         self.last_calls = {element: [initial_time, default_limit] for element in classes}
 
-    def predictor(self, output_dim=None):
+    def predictor(self, output_dim=None, show_skeleton=False):
         network_frame_size = (257, 257)
         capture = cv2.VideoCapture(0)
         if output_dim is None:
@@ -82,7 +83,7 @@ class WebcamPredictor:
 
             if valid == 0 and person.is_valid_first():
                 frame = cv2.resize(frame, output_dim[::-1], interpolation=cv2.INTER_LINEAR)
-                cv2.imshow("WebCam", frame)
+                # cv2.imshow("WebCam", frame)
                 buffer.append(person)
                 buffer_og.append(person)
                 valid += 1
@@ -128,6 +129,10 @@ class WebcamPredictor:
                 buffer = []
                 valid = 0
 
+            if show_skeleton:
+                person.draw_points(frame)
+                cv2.imshow('frame', frame)
+
             # End of while
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -137,7 +142,7 @@ class WebcamPredictor:
         # print(type(person_movement.coords))
         # print(person_movement.coords.shape)
 
-        prediction = self.model.predict(person_movement.coords)[0]
+        prediction = self.model.predict(person_movement.coords, self.threshold_nn)[0]
         if time.time() - self.last_calls[prediction][0] > self.last_calls[prediction][1]:
             self.last_calls[prediction][0] = time.time()
             self.controller.perform_action_name(prediction)

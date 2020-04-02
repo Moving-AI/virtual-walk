@@ -66,10 +66,10 @@ class FullModel:  # Not Model because it would shadow keras'
         else:
             self.callbacks = []
 
-    def predict(self, X):
+    def predict(self, X, threshold_walk=0.5):
         X_scaler = self.predict_scaler(X)
         X_trans = self.predict_PCA(X_scaler)
-        predicted_class = self.predict_NN(X_trans)
+        predicted_class = self.predict_NN(X_trans, threshold_walk)
         return predicted_class
 
     def train_scaler(self, X, savepath=None):
@@ -147,10 +147,10 @@ class FullModel:  # Not Model because it would shadow keras'
     def predict_PCA(self, X):
         return self.PCA.transform(X)
 
-    def predict_NN(self, X):
+    def predict_NN(self, X, threshold_nn=0.5):
         Y = self.NN.predict(X)
         predicted_classes = np.argmax(Y, axis=1)
-        return [self.classes[i] for i in predicted_classes]
+        return [self.classes[predicted_classes[i]] if Y[i, predicted_classes[i]] > threshold_nn  else 'stand' for i in range(len(predicted_classes))]
 
     def _get_NN(self, input_dim, output_dim, layers, dropout):
         '''
