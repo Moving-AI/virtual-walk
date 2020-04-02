@@ -58,6 +58,7 @@ class Person:
         self.rescale = rescale
         self.threshold = threshold
         self.H = self.get_height()
+        self.W = self.get_width()
 
         if rescale[0] != 1. or rescale[1] != 1.:
             self.get_coords = self._get_coords_rescaled
@@ -153,6 +154,19 @@ class Person:
         hip = KeyPoint(18, (hipx, hipy), confidence)
         return hip
 
+    def get_width(self):
+        '''
+        keypoints: 5: LEFT SHOULDER, 6: RIGHT SHOULDER.
+        :return:
+        '''
+        lshoulder_x = self.keypoints[5].x  if self.keypoints[5].confidence > self.threshold else None
+        rshoulder_x = self.keypoints[6].x  if self.keypoints[6].confidence > self.threshold else None
+
+        if lshoulder_x is not None and rshoulder_x is not None:
+            return abs(lshoulder_x - rshoulder_x)
+        else:
+            return 0
+
     def get_height(self):
         '''
         keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 0: NOSE.
@@ -182,9 +196,7 @@ class Person:
         [self.infer_point(index, prev_person) for index, kp in enumerate(self.keypoints)\
             if self.keypoints[index].confidence < self.threshold and index in self.inferred_points]
         self.get_height()
-        #for index, kp in enumerate(self.keypoints):
-        #    if kp.confidence < self.threshold:
-        #        self.infer_point(index, prev_person)
+        self.get_width()
         
 
     def infer_point(self, index, prev_person):
