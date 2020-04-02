@@ -12,14 +12,21 @@ class PersonMovement:
         self.coords = self.get_vector(times_v, joints_remove)
 
     def get_vector(self, times_v, joints_remove):
-        '''
-        Get coordinates vector from a series of frames.
-        :param times_v: int. Times the body velocity is repeated in the resulting vector.
-        :param joints_remove: tuple. Joints that will be removed and not used in the final vector
-        :return: ndarray (1, N). Flattened vector of [x + v * times_v + v] dimensions. Where x and v are the flattened
+        """Get coordinates vector from a series of frames.
+        
+        Args:
+            times_v (int): Times the body velocity is repeated in the resulting vector.
+            joints_remove (tuple): Joints that will be removed and not used in the final vector
+        
+        Returns:
+            ndarray: Flattened vector of [x + v * times_v + v] dimensions. Where x and v are the flattened
         vectors of joints positions and velocities.
-        '''
+        """
+
+        #Array of dimensions (len(list_persons), n_keypoints, 2)
         xs = np.array([person.keypoints_positions for person in self.list_persons])
+        
+        #Heights and widths of the people
         hs = np.array([person.H for person in self.list_persons])
         ws = np.array([person.W for person in self.list_persons])
 
@@ -31,11 +38,12 @@ class PersonMovement:
         x[:,:,1] = (xs[:,:,1] - np.mean(xs[:,:,1])) / avg_w
 
         # Body velocity = neck velocity (index 17 before removing)
-        v = np.empty(times_v - 1)
+        v = []
         for i_person in range(1, self.n_frames):
             vix = (x[i_person, 17 - len(joints_remove), 0] - x[i_person - 1, 17 - len(joints_remove), 0]) ** 2
             viy = (x[i_person, 17 - len(joints_remove), 1] - x[i_person - 1, 17 - len(joints_remove), 1]) ** 2
             v.append(math.sqrt(vix + viy))
+        v = np.array(v)
 
         v_joints = np.empty((self.n_frames - 1, x.shape[1], x.shape[2]))
         for i_person in range(xs.shape[0] - 1):

@@ -229,7 +229,7 @@ class Person:
         Returns:
             bool: True if is valid
         """
-        return self.H > 0
+        return self.H > 0 and self.W > 0
     
     def is_valid_other(self):
 
