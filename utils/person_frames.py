@@ -49,7 +49,7 @@ class PersonMovement:
         for i_person in range(xs.shape[0] - 1):
             v_joints[i_person,:] = x[i_person + 1, :] - x[i_person, :]
 
-        coords = np.concatenate((xs.flatten(), np.repeat(v.flatten(), times_v), v_joints.flatten()))
+        coords = np.concatenate((x.flatten(), np.repeat(v.flatten(), times_v), v_joints.flatten()))
         coords = np.reshape(coords, (1, coords.shape[0]))
 
         return coords

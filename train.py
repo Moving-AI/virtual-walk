@@ -52,8 +52,8 @@ for i_sess in range(n_sessions):
     #     pass
     model = FullModel(classes, tensorboard_path=tb_path, lr=LR, n_components=50, layers_NN=layer_struct,
                       dropout=dropout, optimizer=optimizer)
-    model.train(X_train, Y_train, X_test=X_test, Y_test=Y_test, batch_size=batch_size, epochs=200,
-                callbacks=[tf.keras.callbacks.ModelCheckpoint(filepath='models/weights.hdf5', save_freq=batch_size * 100)])
+    history = model.train(X_train, Y_train, X_test=X_test, Y_test=Y_test, batch_size=batch_size, epochs=500,
+                          callbacks=[tf.keras.callbacks.ModelCheckpoint(filepath='models/weights.hdf5', save_freq=batch_size * 100)], verbose=2)
     model.save_scaler(f'models/scaler_{i_sess}.pkl')
     model.save_PCA(f'models/pca_{i_sess}.pkl')
     model.save_NN(f'models/NN_{i_sess}.h5')
