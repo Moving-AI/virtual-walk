@@ -1,5 +1,14 @@
 import cv2
 import numpy as np
+import logging
+
+
+FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger(__name__)
+
+formatter = logging.Formatter(FORMAT)
+logger.setLevel(logging.INFO)
 
 PARTS = {
     0: 'NOSE',
@@ -82,9 +91,8 @@ class Person:
             offset_vector = (offsets[x, y, ki], offsets[x, y, num_keypoints + ki])
             heatmap_positions.append((x, y))
             offset_vectors.append(offset_vector)
-
         image_positions = np.add(np.array(heatmap_positions) * output_stride, offset_vectors)
-        keypoints = [KeyPoint(i, pos, confidences[i]) for i, pos in enumerate(image_positions)]
+        keypoints = [KeyPoint(i, np.flip(pos), confidences[i]) for i, pos in enumerate(image_positions)]
 
         return keypoints
 
@@ -239,6 +247,7 @@ class Person:
 class KeyPoint:
     def __init__(self, index, pos, v):
         x, y = pos
+        logger.info(x)
         self.x = x
         self.y = y
         self.index = index
