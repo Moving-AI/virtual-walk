@@ -247,7 +247,6 @@ class Person:
 class KeyPoint:
     def __init__(self, index, pos, v):
         x, y = pos
-        logger.info(x)
         self.x = x
         self.y = y
         self.index = index
