@@ -254,7 +254,7 @@ class KeyPoint:
         self.confidence = v
 
     def point(self):
-        return int(self.y), int(self.x)
+        return int(self.x), int(self.y)
 
     def point_rescaled(self, rescale):
         return int(self.y * rescale[0]), int(self.x * rescale[1])
