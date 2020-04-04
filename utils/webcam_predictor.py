@@ -66,7 +66,7 @@ class WebcamPredictor:
         initial_time = time.time()
         self.last_calls = {element: [initial_time, default_limit] for element in classes}
 
-    def predictor(self, output_dim=None, show_skeleton=False):
+    def predictor(self, output_dim=None, show_skeleton=False, times_v=1):
         network_frame_size = (257, 257)
         capture = cv2.VideoCapture(0)
         if output_dim is None:
@@ -111,7 +111,7 @@ class WebcamPredictor:
 
                 buffer.append(person)
 
-                self.process_list(buffer)
+                self.process_list(buffer, times_v)
 
                 valid_startings = [i for i, person in enumerate(buffer_og) if person != False]
                 if len(valid_startings) > 0:
@@ -137,8 +137,8 @@ class WebcamPredictor:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-    def process_list(self, buffer):
-        person_movement = PersonMovement(buffer)
+    def process_list(self, buffer, times_v):
+        person_movement = PersonMovement(buffer, times_v)
         prediction = self.model.predict(person_movement.coords, self.threshold_nn)[0]
         if time.time() - self.last_calls[prediction][0] > self.last_calls[prediction][1]:
             self.last_calls[prediction][0] = time.time()
