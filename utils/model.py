@@ -66,7 +66,7 @@ class FullModel:  # Not Model because it would shadow keras'
         else:
             self.callbacks = []
 
-    def predict(self, X, threshold_nn=0.5):
+    def predict(self, X):
         X_scaler = self.predict_scaler(X)
         X_trans = self.predict_PCA(X_scaler)
         predicted_class = self.predict_NN(X_trans, threshold_nn)
