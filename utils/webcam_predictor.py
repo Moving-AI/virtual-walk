@@ -21,10 +21,11 @@ logger.setLevel(logging.INFO)
 class WebcamPredictor:
     def __init__(self, classes=["walk", "stand", "left", "right"], pca_model_path=None,
                  nn_model_path=None, pose_model_path=None, scaler_model_path=None,
-                 coordinates=None, default_limit=None, driver_path=None, threshold_nn=0.5):
+                 coordinates=None, default_limit=None, driver_path=None, threshold_nn=0.5, time_rotation=0.5):
 
         self.n_frames = 5
         self.threshold_nn = threshold_nn
+        self.classes = classes
 
         if pca_model_path is not None:
             PCA_PATH = Path(pca_model_path)
@@ -47,7 +48,7 @@ class WebcamPredictor:
             SCALER_PATH = Path(__file__).parents[1].joinpath("models/SCALER.pkl")
 
         self.model = FullModel(
-                classes=classes,
+                classes=self.classes,
                 load_path_PCA=str(PCA_PATH),
                 load_path_NN=str(NN_PATH),
                 load_path_scaler=str(SCALER_PATH)
@@ -56,17 +57,25 @@ class WebcamPredictor:
         self.processor = DataProcessor(POSE_PATH)
 
         if coordinates is not None:
-            self.controller = Controller(classes, coordinates=coordinates, driver_path=driver_path)
+            self.controller = Controller(self.classes, coordinates=coordinates, driver_path=driver_path, time_rotation=time_rotation)
         else:
-            self.controller = Controller(classes)
+            self.controller = Controller(self.classes, time_rotation=time_rotation)
 
         if default_limit is None:
             default_limit = 0.5
 
         initial_time = time.time()
-        self.last_calls = {element: [initial_time, default_limit] for element in classes}
+        self.last_calls = {element: [initial_time, default_limit] for element in self.classes}
+
+        self.font, self.color = self._prepare_painter()
+
+    def _prepare_painter(self):
+        font = cv2.FONT_HERSHEY_PLAIN
+        color = (131, 255, 51)
+        return font, color
 
     def predictor(self, output_dim=None, show_skeleton=False, times_v=1):
+        probabilities = None
         network_frame_size = (257, 257)
         capture = cv2.VideoCapture(0)
         if output_dim is None:
@@ -101,7 +110,6 @@ class WebcamPredictor:
                 valid += 1
             elif valid == self.n_frames - 1 and person.is_valid_other():
                 # Here is the ONLY case in which we process a group of frames
-
                 # If frame was valid for first initially, take into account for future frames
                 if person.is_valid_first():
                     buffer_og.append(deepcopy(person))
@@ -111,7 +119,7 @@ class WebcamPredictor:
 
                 buffer.append(person)
 
-                self.process_list(buffer, times_v)
+                probabilities = self.process_list(buffer, times_v)
 
                 valid_startings = [i for i, person in enumerate(buffer_og) if person != False]
                 if len(valid_startings) > 0:
@@ -129,8 +137,9 @@ class WebcamPredictor:
                 buffer = []
                 valid = 0
 
-            if show_skeleton:
+            if show_skeleton and probabilities is not None:
                 person.draw_points(frame)
+                self._write_probabilities(frame, probabilities)
                 cv2.imshow('frame', frame)
 
             # End of while
@@ -139,9 +148,19 @@ class WebcamPredictor:
 
     def process_list(self, buffer, times_v):
         person_movement = PersonMovement(buffer, times_v)
-        prediction = self.model.predict(person_movement.coords, self.threshold_nn)[0]
+        prediction, probabilities = self.model.predict(person_movement.coords, self.threshold_nn)
+        prediction = prediction[0]
+        probabilities = probabilities[0]
         if time.time() - self.last_calls[prediction][0] > self.last_calls[prediction][1]:
             self.last_calls[prediction][0] = time.time()
             self.controller.perform_action_name(prediction)
-        # print(prediction)
-        # print(type(person_movement.coords))
+
+        return probabilities
+
+    def _write_probabilities(self, frame, probabilities):
+        font = cv2.FONT_HERSHEY_PLAIN
+        color = (131, 255, 51)
+        for i, (p, c) in enumerate(zip(probabilities, self.classes)):
+            pos = (10, 30*(i+1) + 30)
+            cv2.putText(frame, '{}: {:.3f}'.format(c, p), pos, font, 0.8, color, 1)
+        return frame

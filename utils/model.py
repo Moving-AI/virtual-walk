@@ -66,11 +66,21 @@ class FullModel:  # Not Model because it would shadow keras'
         else:
             self.callbacks = []
 
-    def predict(self, X, threshold_nn=0.5):
+    def predict(self, X, threshold_nn):
+        '''
+        Function that predicts the class when data X is given. A threshold is applied if specified.
+        Args:
+            X: ndarray. data
+            threshold_nn: float. Threshold to apply to the results. If the probability of the most probable action does not
+            exceed the threshold, "stand" is returned
+
+        Returns:
+            Predicted class (list) and probabilities for each class (list)
+        '''
         X_scaler = self.predict_scaler(X)
         X_trans = self.predict_PCA(X_scaler)
-        predicted_class = self.predict_NN(X_trans, threshold_nn)
-        return predicted_class
+        predicted_class, probs = self.predict_NN(X_trans, threshold_nn)
+        return predicted_class, probs
 
     def train_scaler(self, X, savepath=None):
         self.scaler.fit(X)
@@ -154,7 +164,7 @@ class FullModel:  # Not Model because it would shadow keras'
         Y = self.NN.predict(X)
         predicted_classes = np.argmax(Y, axis=1)
         return [self.classes[predicted_classes[i]] if Y[i, predicted_classes[i]] > threshold_nn else 'stand' for i in
-                range(len(predicted_classes))]
+                range(len(predicted_classes))], Y
 
     def _get_NN(self, input_dim, output_dim, layers, dropout):
         '''
