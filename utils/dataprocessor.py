@@ -53,10 +53,10 @@ class DataProcessor:
         else:
             OUTPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
 
-        if output_path is None:
-            INPUT_PATH = Path(__file__).parents[1].joinpath("resources/")
+        if input_path is None:
+            INPUT_PATH = Path(__file__).parents[1].joinpath("resources/{}".format(filename+".mp4"))
         else:
-            INPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
+            INPUT_PATH = Path(output_path).joinpath("/{}".format(filename+".mp4"))
 
 
         try:
@@ -66,7 +66,7 @@ class DataProcessor:
             os.mkdir(OUTPUT_PATH)
 
         # Read video
-        video = cv2.VideoCapture(INPUT_PATH)
+        video = cv2.VideoCapture(str(INPUT_PATH))
         count = 0
         logger.debug("Started reading frames.")
         while video.isOpened():
@@ -81,7 +81,7 @@ class DataProcessor:
             frame = imutils.rotate(frame, angle)
 
             if count % fps_reduce == 0:
-                cv2.imwrite(OUTPUT_PATH.format("{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce)), frame)
+                cv2.imwrite(str(OUTPUT_PATH.joinpath("{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce))), frame)
             count = count + 1
 
             if cv2.waitKey(10) & 0xFF == ord('q'):
