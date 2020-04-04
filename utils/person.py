@@ -1,5 +1,14 @@
 import cv2
 import numpy as np
+import logging
+
+
+FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger(__name__)
+
+formatter = logging.Formatter(FORMAT)
+logger.setLevel(logging.INFO)
 
 PARTS = {
     0: 'NOSE',
@@ -58,6 +67,7 @@ class Person:
         self.rescale = rescale
         self.threshold = threshold
         self.H = self.get_height()
+        self.W = self.get_width()
 
         if rescale[0] != 1. or rescale[1] != 1.:
             self.get_coords = self._get_coords_rescaled
@@ -81,9 +91,8 @@ class Person:
             offset_vector = (offsets[x, y, ki], offsets[x, y, num_keypoints + ki])
             heatmap_positions.append((x, y))
             offset_vectors.append(offset_vector)
-
         image_positions = np.add(np.array(heatmap_positions) * output_stride, offset_vectors)
-        keypoints = [KeyPoint(i, pos, confidences[i]) for i, pos in enumerate(image_positions)]
+        keypoints = [KeyPoint(i, np.flip(pos), confidences[i]) for i, pos in enumerate(image_positions)]
 
         return keypoints
 
@@ -153,6 +162,19 @@ class Person:
         hip = KeyPoint(18, (hipx, hipy), confidence)
         return hip
 
+    def get_width(self):
+        '''
+        keypoints: 5: LEFT SHOULDER, 6: RIGHT SHOULDER.
+        :return:
+        '''
+        lshoulder_x = self.keypoints[5].x  if self.keypoints[5].confidence > self.threshold else None
+        rshoulder_x = self.keypoints[6].x  if self.keypoints[6].confidence > self.threshold else None
+
+        if lshoulder_x is not None and rshoulder_x is not None:
+            return abs(lshoulder_x - rshoulder_x)
+        else:
+            return 0
+
     def get_height(self):
         '''
         keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 0: NOSE.
@@ -182,9 +204,7 @@ class Person:
         [self.infer_point(index, prev_person) for index, kp in enumerate(self.keypoints)\
             if self.keypoints[index].confidence < self.threshold and index in self.inferred_points]
         self.get_height()
-        #for index, kp in enumerate(self.keypoints):
-        #    if kp.confidence < self.threshold:
-        #        self.infer_point(index, prev_person)
+        self.get_width()
         
 
     def infer_point(self, index, prev_person):
@@ -217,7 +237,7 @@ class Person:
         Returns:
             bool: True if is valid
         """
-        return self.H > 0
+        return self.H > 0 and self.W > 0
     
     def is_valid_other(self):
 
@@ -234,7 +254,7 @@ class KeyPoint:
         self.confidence = v
 
     def point(self):
-        return int(self.y), int(self.x)
+        return int(self.x), int(self.y)
 
     def point_rescaled(self, rescale):
         return int(self.y * rescale[0]), int(self.x * rescale[1])

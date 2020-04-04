@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class FullModel:  # Not Model because it would shadow keras'
-    def __init__(self, classes, load_path_scaler=None, load_path_PCA=None, load_path_NN=None, n_components=50, layers_NN=[50, 50], lr=0.01,
-                 dropout=0, optimizer='sgd', tensorboard_path=None):
+    def __init__(self, classes, load_path_scaler=None, load_path_PCA=None, load_path_NN=None, n_components=50,
+                 layers_NN=[50, 50], lr=0.01, dropout=0, optimizer='sgd', tensorboard_path=None):
         '''
         This model consists of a PCA and Neural Network. It has all the necessary methods to train and predict all the
         results.
@@ -69,7 +69,7 @@ class FullModel:  # Not Model because it would shadow keras'
     def predict(self, X):
         X_scaler = self.predict_scaler(X)
         X_trans = self.predict_PCA(X_scaler)
-        predicted_class = self.predict_NN(X_trans)
+        predicted_class = self.predict_NN(X_trans, threshold_nn)
         return predicted_class
 
     def train_scaler(self, X, savepath=None):
@@ -94,14 +94,14 @@ class FullModel:  # Not Model because it would shadow keras'
 
     def _compile_NN(self, optimizer, lr):
         if optimizer == 'sgd':
-            opt = SGD(lr=lr, decay=3e-5, momentum=0.9, nesterov=True)
+            opt = SGD(lr=lr, decay=3e-5, momentum=0.9, nesterov=True, clipnorm=1.)
         elif optimizer == 'adam':
-            opt = Adam(learning_rate=lr)
+            opt = Adam(learning_rate=lr, clipnorm=0.5)
         else:
             raise ValueError('Not implemented compiler')
         self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
-    def train(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, callbacks=[]):
+    def train(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, callbacks=[], verbose=0):
         self.train_scaler(X_train)
         X_scaled = self.predict_scaler(X_train)
         X_scaled_test = self.predict_scaler(X_test)
@@ -111,8 +111,9 @@ class FullModel:  # Not Model because it would shadow keras'
         X_pca = self.predict_PCA(X_scaled)
         X_pca_test = self.predict_PCA(X_scaled_test)
 
-        self.train_NN(X_pca, Y_train, X_test=X_pca_test, Y_test=Y_test, batch_size=batch_size, epochs=epochs,
-                      is_one_hot=is_one_hot, callbacks=callbacks)
+        history = self.train_NN(X_pca, Y_train, X_test=X_pca_test, Y_test=Y_test, batch_size=batch_size, epochs=epochs,
+                      is_one_hot=is_one_hot, callbacks=callbacks, verbose=verbose)
+        return history
 
     def train_NN(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, savepath=None,
                  verbose=0, callbacks=[]):
@@ -134,8 +135,8 @@ class FullModel:  # Not Model because it would shadow keras'
 
         self.callbacks.extend(callbacks)
 
-        self.NN.fit(X_train, Y_train, validation_data=(X_test, Y_test), batch_size=batch_size, epochs=epochs,
-                    callbacks=self.callbacks, verbose=verbose)
+        history = self.NN.fit(X_train, Y_train, validation_data=(X_test, Y_test), batch_size=batch_size, epochs=epochs,
+                              callbacks=self.callbacks, verbose=verbose)
 
         if X_test is not None:
             assert Y_test is not None, 'In order to evaluate the model Y_test must be passed to the training function'
@@ -144,13 +145,16 @@ class FullModel:  # Not Model because it would shadow keras'
         if savepath is not None:
             self.save_NN(savepath)
 
+        return history
+
     def predict_PCA(self, X):
         return self.PCA.transform(X)
 
-    def predict_NN(self, X):
+    def predict_NN(self, X, threshold_nn):
         Y = self.NN.predict(X)
         predicted_classes = np.argmax(Y, axis=1)
-        return [self.classes[i] for i in predicted_classes]
+        return [self.classes[predicted_classes[i]] if Y[i, predicted_classes[i]] > threshold_nn else 'stand' for i in
+                range(len(predicted_classes))]
 
     def _get_NN(self, input_dim, output_dim, layers, dropout):
         '''
@@ -172,7 +176,10 @@ class FullModel:  # Not Model because it would shadow keras'
 
     @staticmethod
     def _Dense(x, dim, dropout, activation='relu'):
-        x = Dense(dim, activation=activation, kernel_initializer='he_normal', bias_initializer='he_normal')(x)
+        x = Dense(dim, activation=activation, kernel_initializer='he_normal', bias_initializer='he_normal',
+                  kernel_regularizer=tf.keras.regularizers.l2(0.01),
+                  activity_regularizer=tf.keras.regularizers.l2(0.01))(x)
+        #
         if dropout != 0:
             x = Dropout(dropout)(x)
         return x
@@ -218,7 +225,8 @@ class FullModel:  # Not Model because it would shadow keras'
 
     @staticmethod
     def create_callbacks(path):
-        return TensorBoard(log_dir=path, write_graph=True, histogram_freq=5, update_freq='epoch', profile_batch=100000000,
+        return TensorBoard(log_dir=path, write_graph=True, histogram_freq=5, update_freq='epoch',
+                           profile_batch=100000000,
                            write_grads=True)
 
     def get_explained_variance_ratio(self):

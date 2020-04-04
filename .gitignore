@@ -9,6 +9,7 @@ utils/__pycache__
 resources/*
 .idea
 logs
+.vscode
 *.zip
 *.exe
 *.log

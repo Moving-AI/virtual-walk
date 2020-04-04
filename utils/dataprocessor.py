@@ -24,8 +24,13 @@ logger.setLevel(logging.INFO)
 
 
 class DataProcessor:
-    def __init__(self, model_path, input_dim=(257, 257), threshold=0.5):
-        self.model, self.input_details, self.output_details = funciones.load_model(model_path)
+    def __init__(self, model_path = None, input_dim=(257, 257), threshold=0.5):
+        if model_path is None:
+            MODEL_PATH = Path(__file__).parents[1].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
+        else:
+            MODEL_PATH = model_path
+
+        self.model, self.input_details, self.output_details = funciones.load_model(str(MODEL_PATH))
         self.input_dim = input_dim
         self.threshold = threshold
         self.rescale = (1, 1)
@@ -48,10 +53,10 @@ class DataProcessor:
         else:
             OUTPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
 
-        if output_path is None:
-            INPUT_PATH = Path(__file__).parents[1].joinpath("resources/")
+        if input_path is None:
+            INPUT_PATH = Path(__file__).parents[1].joinpath("resources/{}".format(filename+".mp4"))
         else:
-            INPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
+            INPUT_PATH = Path(output_path).joinpath("/{}".format(filename+".mp4"))
 
 
         try:
@@ -61,7 +66,7 @@ class DataProcessor:
             os.mkdir(OUTPUT_PATH)
 
         # Read video
-        video = cv2.VideoCapture(INPUT_PATH)
+        video = cv2.VideoCapture(str(INPUT_PATH))
         count = 0
         logger.debug("Started reading frames.")
         while video.isOpened():
@@ -76,7 +81,7 @@ class DataProcessor:
             frame = imutils.rotate(frame, angle)
 
             if count % fps_reduce == 0:
-                cv2.imwrite(OUTPUT_PATH.format("{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce)), frame)
+                cv2.imwrite(str(OUTPUT_PATH.joinpath("{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce))), frame)
             count = count + 1
 
             if cv2.waitKey(10) & 0xFF == ord('q'):
@@ -205,6 +210,25 @@ class DataProcessor:
         """
         logger.debug("Processing frame {}".format(image_path.split("/")[-1]))
         frame = cv2.imread(image_path)
+        frame = funciones.prepare_frame(frame, self.input_dim)
+        output_data, offset_data = funciones.get_model_output(self.model,
+                                                              frame,
+                                                              self.input_details,
+                                                              self.output_details)
+        return Person(output_data, offset_data, self.rescale, self.threshold)
+
+    
+    def process_live_frame(self, frame):
+        """Receives a frame path and returns the person associated
+        
+        Args:
+            image_path (str): String containig the path of an image
+        
+        Returns:
+            Person: Person associated to that frame.
+        """
+        logger.debug("Processing frame passed to the function (live).")
+        #frame = cv2.imread(image_path)
         frame = funciones.prepare_frame(frame, self.input_dim)
         output_data, offset_data = funciones.get_model_output(self.model,
                                                               frame,
