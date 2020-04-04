@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 
 class FullModel:  # Not Model because it would shadow keras'
     def __init__(self, classes, load_path_scaler=None, load_path_PCA=None, load_path_NN=None, n_components=50,
-                 layers_NN=[50, 50], lr=0.01,
-                 dropout=0, optimizer='sgd', tensorboard_path=None):
+                 layers_NN=[50, 50], lr=0.01, dropout=0, optimizer='sgd', tensorboard_path=None):
         '''
         This model consists of a PCA and Neural Network. It has all the necessary methods to train and predict all the
         results.
@@ -67,10 +66,10 @@ class FullModel:  # Not Model because it would shadow keras'
         else:
             self.callbacks = []
 
-    def predict(self, X, threshold_walk=0.5):
+    def predict(self, X, threshold_nn=0.5):
         X_scaler = self.predict_scaler(X)
         X_trans = self.predict_PCA(X_scaler)
-        predicted_class = self.predict_NN(X_trans, threshold_walk)
+        predicted_class = self.predict_NN(X_trans, threshold_nn)
         return predicted_class
 
     def train_scaler(self, X, savepath=None):
@@ -151,7 +150,7 @@ class FullModel:  # Not Model because it would shadow keras'
     def predict_PCA(self, X):
         return self.PCA.transform(X)
 
-    def predict_NN(self, X, threshold_nn=0.5):
+    def predict_NN(self, X, threshold_nn):
         Y = self.NN.predict(X)
         predicted_classes = np.argmax(Y, axis=1)
         return [self.classes[predicted_classes[i]] if Y[i, predicted_classes[i]] > threshold_nn else 'stand' for i in

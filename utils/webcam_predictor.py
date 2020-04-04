@@ -139,12 +139,9 @@ class WebcamPredictor:
 
     def process_list(self, buffer):
         person_movement = PersonMovement(buffer)
-        # print(type(person_movement.coords))
-        # print(person_movement.coords.shape)
-
         prediction = self.model.predict(person_movement.coords, self.threshold_nn)[0]
         if time.time() - self.last_calls[prediction][0] > self.last_calls[prediction][1]:
             self.last_calls[prediction][0] = time.time()
             self.controller.perform_action_name(prediction)
-        print(prediction)
+        # print(prediction)
         # print(type(person_movement.coords))
