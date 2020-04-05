@@ -179,7 +179,7 @@ class FullModel:  # Not Model because it would shadow keras'
         x = self._Dense(inputs, layers[0], dropout, 'relu')
         for layer in layers[1:]:
             x = self._Dense(x, layer, dropout, 'relu')
-        outputs = Dense(output_dim, activation='sigmoid')(x)
+        outputs = Dense(output_dim, activation='softmax')(x)
 
         model = Model(inputs=inputs, outputs=outputs)
         return model
