@@ -1,10 +1,12 @@
-import tensorflow as tf
-import numpy as np
-from utils.person import Person
-import os
-import cv2
+import argparse
 import logging
+import os
 import re
+
+import cv2
+import numpy as np
+import tensorflow as tf
+
 logger = logging.getLogger(__name__)
 
 def load_model(path):
@@ -93,3 +95,13 @@ def process_video(filename, output_shape = (256,256), fps_reduce = 2):
             break
     logging.debug("Stop reading files.")
     video.release()
+
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
