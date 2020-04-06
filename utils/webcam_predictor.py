@@ -140,6 +140,7 @@ class WebcamPredictor:
             if show_skeleton and probabilities is not None:
                 person.draw_points(frame)
                 self._write_probabilities(frame, probabilities)
+                self._write_distance(frame, self.controller.distance_calculator.distance)
                 cv2.imshow('frame', frame)
 
             # End of while
@@ -164,3 +165,10 @@ class WebcamPredictor:
             pos = (10, 30*(i+1) + 30)
             cv2.putText(frame, '{}: {:.3f}'.format(c, p), pos, font, 0.8, color, 1)
         return frame
+    def _write_distance(self, frame, distance):
+        font = cv2.FONT_HERSHEY_PLAIN
+        color = (131, 255, 51)
+        pos = (10, 30*(4+1) + 30)
+        cv2.putText(frame, 'Distance: {:.3f}'.format(distance), pos, font, 0.8, color, 1)
+        return frame
+
