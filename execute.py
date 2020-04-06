@@ -10,7 +10,7 @@ paris = [48.8574788, 2.3515892]
 roma = [41.9045284, 12.4941586]
 barcelona = [41.3921363, 2.1618873]
 nyc = [40.7576611, -73.9866615]
-sidney = [-33.8676594, 151.2081157]
+sidney = [-33.8643791, 151.2127931]
 nueva_zelanda = [-41.2846378, 174.7772473]
 
 parser.add_argument('-d', '--driver-path',
@@ -62,6 +62,7 @@ FLAGS, unparsed = parser.parse_known_args()
 
 wp = WebcamPredictor(driver_path=FLAGS.driver_path, scaler_model_path=FLAGS.scaler_model,
                      pca_model_path=FLAGS.pca_model, nn_model_path=FLAGS.nn_model,
-                     threshold_nn=FLAGS.threshold, default_limit=FLAGS.default_limit, time_rotation=FLAGS.time_rotating, coordinates=FLAGS.initial_coordinates)
+                     threshold_nn=FLAGS.threshold, default_limit=FLAGS.default_limit, time_rotation=FLAGS.time_rotating,
+                     coordinates=FLAGS.initial_coordinates)
 
 wp.predictor(times_v=1, show_skeleton=FLAGS.skeleton)
