@@ -9,6 +9,7 @@ from utils.controller import Controller
 from utils.dataprocessor import DataProcessor
 from utils.model import FullModel
 from utils.person_frames import PersonMovement
+from utils.lstm_model import LSTMModel
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -47,12 +48,19 @@ class WebcamPredictor:
         else:
             SCALER_PATH = Path(__file__).parents[1].joinpath("models/SCALER.pkl")
 
+        LSTM_PATH = Path(__file__).parents[1].joinpath("models/LSTM.h5")
+
         self.model = FullModel(
                 classes=self.classes,
                 load_path_PCA=str(PCA_PATH),
                 load_path_NN=str(NN_PATH),
                 load_path_scaler=str(SCALER_PATH)
             )
+        self.model_lstm = LSTMModel(
+            classes,
+            input_dim=28,
+            load_path_NN=str(LSTM_PATH)
+        )
         # print("creo processor")
         self.processor = DataProcessor(POSE_PATH)
 
@@ -119,7 +127,7 @@ class WebcamPredictor:
 
                 buffer.append(person)
 
-                probabilities = self.process_list(buffer, times_v)
+                probabilities = self.process_list_lstm(buffer, times_v)
 
                 valid_startings = [i for i, person in enumerate(buffer_og) if person != False]
                 if len(valid_startings) > 0:
@@ -149,7 +157,25 @@ class WebcamPredictor:
 
     def process_list(self, buffer, times_v):
         person_movement = PersonMovement(buffer, times_v)
+        
+
         prediction, probabilities = self.model.predict(person_movement.coords, self.threshold_nn)
+        prediction = prediction[0]
+        probabilities = probabilities[0]
+        if time.time() - self.last_calls[prediction][0] > self.last_calls[prediction][1]:
+            self.last_calls[prediction][0] = time.time()
+            self.controller.perform_action_name(prediction)
+
+        return probabilities
+
+    def process_list_lstm(self, buffer, times_v):
+        n_joints = 14
+        time_steps = 5
+        person_movement = PersonMovement(buffer, times_v).coords
+        
+        person_movement = person_movement[:,:n_joints * 2 * time_steps]
+        person_movement = person_movement.reshape((1, time_steps, n_joints * 2))
+        prediction, probabilities = self.model_lstm.predict_NN(person_movement, self.threshold_nn)
         prediction = prediction[0]
         probabilities = probabilities[0]
         if time.time() - self.last_calls[prediction][0] > self.last_calls[prediction][1]:

@@ -72,6 +72,12 @@ class LSTMModel:
 
         return history
 
+    def predict_NN(self, X, threshold_nn):
+        Y = self.NN.predict(X)
+        predicted_classes = np.argmax(Y, axis=1)
+        return [self.classes[predicted_classes[i]] if Y[i, predicted_classes[i]] > threshold_nn else 'stand' for i in
+                range(len(predicted_classes))], Y
+
     @staticmethod
     def load_NN(model_path):
         return tf.keras.models.load_model(model_path)
