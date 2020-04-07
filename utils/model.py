@@ -67,6 +67,7 @@ class FullModel:  # Not Model because it would shadow keras'
             self.callbacks = []
 
     def predict(self, X, threshold_nn):
+
         '''
         Function that predicts the class when data X is given. A threshold is applied if specified.
         Args:
