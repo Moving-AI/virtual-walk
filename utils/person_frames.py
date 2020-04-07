@@ -2,14 +2,15 @@ import math
 
 import numpy as np
 
-from utils.person import Person
-
 
 class PersonMovement:
-    def __init__(self, list_persons, times_v=10, joints_remove=(13, 14, 15, 16)):
+    def __init__(self, list_persons, times_v=10, joints_remove=(13, 14, 15, 16), model='LSTM'):
         self.list_persons = list_persons
         self.n_frames = len(list_persons)
-        self.coords = self.get_vector(times_v, joints_remove)
+        if model == 'LSTM':
+            self.coords = self.get_vector_lstm(joints_remove)
+        else:
+            self.coords = self.get_vector(times_v, joints_remove)
 
     def get_vector(self, times_v, joints_remove):
         """Get coordinates vector from a series of frames.
@@ -58,11 +59,31 @@ class PersonMovement:
         writer = np.append([label], self.coords)
         np.savetxt(path, writer, delimiter='\t')
 
+    def get_vector_lstm(self, joints_remove):
+        """Get coordinates vector (only positions) from a series of frames.
 
-if __name__ == '__main__':
-    path = '../prueba.txt'
-    p = Person(path_txt=path)
-    p2 = p
-    list_p = [p, p, p, p, p]
-    group = PersonMovement(list_p)
-    # c = group.get_vector(10)
+        Args:
+            joints_remove (tuple): Joints that will be removed and not used in the final vector
+
+        Returns:
+            ndarray: Flattened vector of [x] dimensions. Where x is the flattened vector of joints positions and velocities.
+        """
+
+        # Array of dimensions (len(list_persons), n_keypoints, 2)
+        xs = np.array([person.keypoints_positions for person in self.list_persons])
+
+        # Heights and widths of the people
+        hs = np.array([person.H for person in self.list_persons])
+        ws = np.array([person.W for person in self.list_persons])
+
+        xs = np.delete(xs, joints_remove, axis=1)
+        avg_h = np.mean(hs)
+        avg_w = np.mean(ws)
+        x = np.empty(xs.shape)
+        x[:, :, 0] = (xs[:, :, 0] - np.mean(xs[:, :, 0])) / avg_h
+        x[:, :, 1] = (xs[:, :, 1] - np.mean(xs[:, :, 1])) / avg_w
+
+        coords = x.flatten()
+        coords = np.reshape(coords, (1, self.n_frames, xs.shape[1] * 2))
+
+        return coords

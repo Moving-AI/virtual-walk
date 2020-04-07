@@ -18,6 +18,11 @@ parser.add_argument('-d', '--driver-path',
                     type=str,
                     help='The path to the Firefox driver')
 
+parser.add_argument('-m', '--model',
+                    default='LSTM',
+                    type=str,
+                    help='Type of model LSTM or different.')
+
 parser.add_argument('-s', '--scaler-model',
                     default='models/scaler_0.pkl',
                     type=str,

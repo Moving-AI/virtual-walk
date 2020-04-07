@@ -7,7 +7,6 @@ from pathlib import Path
 import cv2
 import imutils
 import numpy as np
-import os
 import pandas as pd
 
 import utils.funciones as funciones
@@ -24,7 +23,7 @@ logger.setLevel(logging.INFO)
 
 
 class DataProcessor:
-    def __init__(self, model_path = None, input_dim=(257, 257), threshold=0.5):
+    def __init__(self, model_path = None, input_dim=(257, 257), threshold=0.5, rescale=(1,1)):
         if model_path is None:
             MODEL_PATH = Path(__file__).parents[1].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
         else:
@@ -33,7 +32,7 @@ class DataProcessor:
         self.model, self.input_details, self.output_details = funciones.load_model(str(MODEL_PATH))
         self.input_dim = input_dim
         self.threshold = threshold
-        self.rescale = (1, 1)
+        self.rescale = rescale
 
     @staticmethod
     def process_video(filename, input_path = None, output_path = None, output_shape=(257, 257), fps_reduce=2, angle=0):
