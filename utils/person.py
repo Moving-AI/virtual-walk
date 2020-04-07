@@ -1,7 +1,7 @@
-import cv2
-import numpy as np
 import logging
 
+import cv2
+import numpy as np
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -112,8 +112,8 @@ class Person:
 
     def _get_limbs_rescaled(self):
         limbs = [(self.keypoints[i].point_rescaled(self.rescale), self.keypoints[j].point_rescaled(self.rescale)) for
-                 i, j in self.pairs if
-                 self.keypoints[i].confidence > self.threshold and self.keypoints[j].confidence > self.threshold]
+                 i, j in self.pairs if self.keypoints[i].confidence > self.threshold and self.keypoints[j].confidence > self.threshold]
+
         return list(filter(lambda x: x is not None, limbs))
 
     def confidence(self):
@@ -257,7 +257,7 @@ class KeyPoint:
         return int(self.x), int(self.y)
 
     def point_rescaled(self, rescale):
-        return int(self.y * rescale[0]), int(self.x * rescale[1])
+        return int(self.x * rescale[0]), int(self.y * rescale[1])
 
     def to_string(self):
         return 'part: {} location: {} confidence: {}'.format(self.body_part, (self.x, self.y), self.confidence)
