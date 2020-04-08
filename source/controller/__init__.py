@@ -112,9 +112,9 @@ class Controller:
         """Perform action given its name.
         
         Args:
-            action (str): Name of the action to perform. As it uses a mapper, it must be one of
-        ['walk', 'stand', 'left', 'right']
+            action (str): Name of the action to perform. As it uses a mapper, it must be one of ['walk', 'stand', 'left', 'right']
         """
+
         self.action_mapper[action]()
         self.distance_calculator.update_distance(self._driver.current_url)
         logging.info("You have made {} meters".format(self.distance_calculator.distance))

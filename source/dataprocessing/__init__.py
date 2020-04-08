@@ -9,10 +9,10 @@ import imutils
 import numpy as np
 import pandas as pd
 
-import utils.funciones as funciones
-from utils.funciones import read_labels_txt
-from utils.entities.person import Person
-from utils.entities.person_frames import PersonMovement
+import funciones as funciones
+from funciones import read_labels_txt
+from entities.person import Person
+from entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -178,10 +178,10 @@ class DataProcessor:
 
     def get_coordinates(self, labels_path=None, actions=None, n=5, times_v=10):
         """This functions is a wrapper that makes this steps:
-        - Gets actions and frame intervals from the labels file
-        - Processes the frame intervals, keeping only the valid ones.
-        - Groups the frames in groups of n
-        - Coordinates are calculated from those groups
+            - Gets actions and frame intervals from the labels file
+            - Processes the frame intervals, keeping only the valid ones.
+            - Groups the frames in groups of n
+            - Coordinates are calculated from those groups
         Args:
             labels_path (str, optional): Absolute for the labels file. If none, it is searched inside
             action-recognition/resources

@@ -39,7 +39,7 @@ class PersonMovement:
         
         Returns:
             ndarray: Flattened vector of [x + v * times_v + v] dimensions. Where x and v are the flattened
-        vectors of joints positions and velocities.
+            vectors of joints positions and velocities.
         """
 
         #Array of dimensions (len(list_persons), n_keypoints, 2)

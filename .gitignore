@@ -14,3 +14,9 @@ logs
 *.exe
 *.log
 !.empty
+__pycache__
+docs/**
+!docs
+!docs/build
+!docs/build/html
+!docs/build/html/**
