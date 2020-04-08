@@ -64,7 +64,7 @@ class WebcamPredictor:
             if nn_model_path is not None:
                 LSTM_PATH = Path(nn_model_path)
             else:
-                LSTM_PATH = Path(__file__).parents[1].joinpath("models/LSTM.h5")
+                LSTM_PATH = Path(__file__).parents[2].joinpath("models/LSTM.h5")
 
             self.model_lstm = LSTMModel(
                 classes,
@@ -76,17 +76,17 @@ class WebcamPredictor:
             if pca_model_path is not None:
                 PCA_PATH = Path(pca_model_path)
             else:
-                PCA_PATH = Path(__file__).parents[1].joinpath("models/PCA.pkl")
+                PCA_PATH = Path(__file__).parents[2].joinpath("models/PCA.pkl")
 
             if nn_model_path is not None:
                 NN_PATH = Path(nn_model_path)
             else:
-                NN_PATH = Path(__file__).parents[1].joinpath("models/NN.h5")
+                NN_PATH = Path(__file__).parents[2].joinpath("models/NN.h5")
 
             if scaler_model_path is not None:
                 SCALER_PATH = Path(scaler_model_path)
             else:
-                SCALER_PATH = Path(__file__).parents[1].joinpath("models/SCALER.pkl")
+                SCALER_PATH = Path(__file__).parents[2].joinpath("models/SCALER.pkl")
 
             self.model = FullModel(
                 classes=self.classes,
@@ -97,7 +97,7 @@ class WebcamPredictor:
             self.process_frames = self.process_list
 
         if pose_model_path is None:
-            POSE_PATH = Path(__file__).parents[1].joinpath(
+            POSE_PATH = Path(__file__).parents[2].joinpath(
                 "models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
         else:
             POSE_PATH = pose_model_path

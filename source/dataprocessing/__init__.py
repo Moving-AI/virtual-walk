@@ -9,10 +9,10 @@ import imutils
 import numpy as np
 import pandas as pd
 
-import funciones as funciones
-from funciones import read_labels_txt
-from entities.person import Person
-from entities.person_frames import PersonMovement
+import source.funciones as funciones
+from source.funciones import read_labels_txt
+from source.entities.person import Person
+from source.entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -42,7 +42,7 @@ class DataProcessor:
             rescale (tuple, optional): Rescaling factor in the output. Defaults to (1,1).
         """
         if model_path is None:
-            MODEL_PATH = Path(__file__).parents[1].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
+            MODEL_PATH = Path(__file__).parents[2].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
         else:
             MODEL_PATH = model_path
 
@@ -131,11 +131,11 @@ class DataProcessor:
             if append = True
         """
         if labels_path is None:
-            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+            labels_path = Path(__file__).parents[2].joinpath("resources/{}".format("labels.txt"))
         else:
             labels_path = Path(labels_path)
         if output_file is None:
-            output_file = Path(__file__).parents[1].joinpath("resources/{}".format("training_data.csv"))
+            output_file = Path(__file__).parents[2].joinpath("resources/{}".format("training_data.csv"))
         else:
             output_file = Path(output_file)
 
@@ -197,7 +197,7 @@ class DataProcessor:
 
         logger.info("Calculating coordinates from labels_path {}".format(labels_path))
         if labels_path is None:
-            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+            labels_path = Path(__file__).parents[2].joinpath("resources/{}".format("labels.txt"))
         else:
             labels_path = Path(labels_path)
         actions = DataProcessor.find_actions(labels_path)
@@ -309,7 +309,7 @@ class DataProcessor:
         """
         logger.debug("Calculating people list from interval {} in file {}".format(interval, fle))
         if images_path is None:
-            PATH = Path(__file__).parents[1].joinpath("resources/{}".format(fle))
+            PATH = Path(__file__).1parents[2].joinpath("resources/{}".format(fle))
         else:
             images_path = Path(images_path).joinpath("/{}".format(fle))
 

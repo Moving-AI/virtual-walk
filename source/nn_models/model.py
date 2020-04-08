@@ -198,7 +198,7 @@ class FullModel:  # Not Model because it would shadow keras'
     def save_scaler(self, savepath):
         if savepath is None:
             current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-            savepath = Path(__file__).parents[1].joinpath('models/scaler_{}.pkl'.format(current_time))
+            savepath = Path(__file__).parents[2].joinpath('models/scaler_{}.pkl'.format(current_time))
 
         with open(savepath, 'wb') as file:
             pickle.dump(self.scaler, file)
@@ -207,7 +207,7 @@ class FullModel:  # Not Model because it would shadow keras'
     def save_PCA(self, savepath):
         if savepath is None:
             current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-            savepath = Path(__file__).parents[1].joinpath('models/PCA_{}.pkl'.format(current_time))
+            savepath = Path(__file__).parents[2].joinpath('models/PCA_{}.pkl'.format(current_time))
 
         with open(savepath, 'wb') as file:
             pickle.dump(self.PCA, file)
