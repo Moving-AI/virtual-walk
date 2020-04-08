@@ -6,10 +6,10 @@ from pathlib import Path
 import cv2
 
 from utils.controller import Controller
-from utils.dataprocessor import DataProcessor
-from utils.lstm_model import LSTMModel
-from utils.model import FullModel
-from utils.person_frames import PersonMovement
+from utils.dataprocessing.dataprocessor import DataProcessor
+from utils.models.lstm_model import LSTMModel
+from utils.models.model import FullModel
+from utils.entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)

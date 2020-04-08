@@ -11,8 +11,8 @@ import pandas as pd
 
 import utils.funciones as funciones
 from utils.funciones import read_labels_txt
-from utils.person import Person
-from utils.person_frames import PersonMovement
+from utils.entities.person import Person
+from utils.entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
