@@ -14,6 +14,7 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
     
+    <link rel="shortcut icon" href="_static/Logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -41,11 +42,11 @@
 </div>
 <p>Hola me llamo Gonzalo.</p>
 </div>
-<div class="section" id="module-dataprocessing">
-<span id="data-processing"></span><h1>Data Processing<a class="headerlink" href="#module-dataprocessing" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-source.dataprocessing">
+<span id="data-processing"></span><h1>Data Processing<a class="headerlink" href="#module-source.dataprocessing" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="dataprocessing.DataProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">dataprocessing.</code><code class="sig-name descname">DataProcessor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">input_dim</span><span class="o">=</span><span class="default_value">257, 257</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">rescale</span><span class="o">=</span><span class="default_value">1, 1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor">
+<em class="property">class </em><code class="sig-prename descclassname">source.dataprocessing.</code><code class="sig-name descname">DataProcessor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">input_dim</span><span class="o">=</span><span class="default_value">257, 257</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">rescale</span><span class="o">=</span><span class="default_value">1, 1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class used to process data to generate training examples. Has the recquired functions
 to read a video from a directory and extract the frames. Once a labels file is provided
 with the valid frames for each video, the frame groups are made and training data is generated
@@ -55,8 +56,8 @@ and written in a file for later usage.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.frame_interval_to_people_list">
-<code class="sig-name descname">frame_interval_to_people_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fle</span></em>, <em class="sig-param"><span class="n">interval</span></em>, <em class="sig-param"><span class="n">images_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.frame_interval_to_people_list" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.frame_interval_to_people_list">
+<code class="sig-name descname">frame_interval_to_people_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fle</span></em>, <em class="sig-param"><span class="n">interval</span></em>, <em class="sig-param"><span class="n">images_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.frame_interval_to_people_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>From an interval [start, end] of frames from video, returns a list
 of tuples (index, person(i_Frame)).</p>
 <dl class="simple">
@@ -69,8 +70,8 @@ interval (list): start and end of the interval</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.get_coordinates">
-<code class="sig-name descname">get_coordinates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">labels_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">actions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.get_coordinates" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.get_coordinates">
+<code class="sig-name descname">get_coordinates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">labels_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">actions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.get_coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>This functions is a wrapper that makes this steps:</dt><dd><ul class="simple">
 <li><p>Gets actions and frame intervals from the labels file</p></li>
@@ -93,8 +94,8 @@ frame selection pipeline.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.get_frame_groups">
-<code class="sig-name descname">get_frame_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">actions</span></em>, <em class="sig-param"><span class="n">labels_path</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.get_frame_groups" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.get_frame_groups">
+<code class="sig-name descname">get_frame_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">actions</span></em>, <em class="sig-param"><span class="n">labels_path</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.get_frame_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>From a labels path, a list of actions and a number of frames per
 training data row gets all posible groups of frames to process.</p>
 <dl class="simple">
@@ -108,8 +109,8 @@ n (int, optional): Size of the list of people needed. Defaults to 5.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.process_frame">
-<code class="sig-name descname">process_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.process_frame" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.process_frame">
+<code class="sig-name descname">process_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.process_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Receives a frame path and returns the person associated</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>image_path (str): String containig the path of an image</p>
@@ -120,8 +121,8 @@ n (int, optional): Size of the list of people needed. Defaults to 5.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.process_live_frame">
-<code class="sig-name descname">process_live_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.process_live_frame" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.process_live_frame">
+<code class="sig-name descname">process_live_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.process_live_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Receives a frame path and returns the person associated</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>image_path (str): String containig the path of an image</p>
@@ -132,8 +133,8 @@ n (int, optional): Size of the list of people needed. Defaults to 5.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.process_video">
-<em class="property">static </em><code class="sig-name descname">process_video</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">input_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_shape</span><span class="o">=</span><span class="default_value">257, 257</span></em>, <em class="sig-param"><span class="n">fps_reduce</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">angle</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.process_video" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.process_video">
+<em class="property">static </em><code class="sig-name descname">process_video</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">input_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_shape</span><span class="o">=</span><span class="default_value">257, 257</span></em>, <em class="sig-param"><span class="n">fps_reduce</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">angle</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.process_video" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process a video from the resources folder and saves all the frames
 inside a folder with the name of the video
 FILENAME_frame_X.jpg</p>
@@ -148,8 +149,8 @@ angle (int): Angle that the video images should be rotated.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.training_file_writer">
-<code class="sig-name descname">training_file_writer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">labels_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">append</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.training_file_writer" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.training_file_writer">
+<code class="sig-name descname">training_file_writer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">labels_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">append</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.training_file_writer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is the main function inside DataProcessor file. It runs the whole pipeline, in this order:
 - Gets actions and frame intervals from the labels file
 - Processes the frame intervals, keeping only the valid ones.
@@ -173,8 +174,8 @@ if append = True</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dataprocessing.DataProcessor.valid_groups">
-<code class="sig-name descname">valid_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lst</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataprocessing.DataProcessor.valid_groups" title="Permalink to this definition">¶</a></dt>
+<dt id="source.dataprocessing.DataProcessor.valid_groups">
+<code class="sig-name descname">valid_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lst</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.dataprocessing.DataProcessor.valid_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a list of persons, returns the valid lists of contiguous persons
 (frames)</p>
 <dl class="simple">
@@ -187,11 +188,11 @@ lst (list): List of lists [int, Person]</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-entities.person">
-<span id="person-entity"></span><h1>Person entity<a class="headerlink" href="#module-entities.person" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-source.entities.person">
+<span id="person-entity"></span><h1>Person entity<a class="headerlink" href="#module-source.entities.person" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="entities.person.Person">
-<em class="property">class </em><code class="sig-prename descclassname">entities.person.</code><code class="sig-name descname">Person</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">heatmap</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offsets</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rescale</span><span class="o">=</span><span class="default_value">1, 1</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.7</span></em>, <em class="sig-param"><span class="n">path_txt</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_head</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#entities.person.Person" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person.Person">
+<em class="property">class </em><code class="sig-prename descclassname">source.entities.person.</code><code class="sig-name descname">Person</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">heatmap</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offsets</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rescale</span><span class="o">=</span><span class="default_value">1, 1</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.7</span></em>, <em class="sig-param"><span class="n">path_txt</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_head</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person.Person" title="Permalink to this definition">¶</a></dt>
 <dd><p>Person detected in a frame. With this class a person entity can be extracted from an image.
 All the keypoints are extracted and keypoints saved.</p>
 <dl class="simple">
@@ -199,22 +200,22 @@ All the keypoints are extracted and keypoints saved.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="entities.person.Person.get_height">
-<code class="sig-name descname">get_height</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#entities.person.Person.get_height" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person.Person.get_height">
+<code class="sig-name descname">get_height</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person.Person.get_height" title="Permalink to this definition">¶</a></dt>
 <dd><p>keypoints: 15: LEFT FOOT, 16: RIGHT FOOT, 0: NOSE.
 :return:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="entities.person.Person.get_width">
-<code class="sig-name descname">get_width</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#entities.person.Person.get_width" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person.Person.get_width">
+<code class="sig-name descname">get_width</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person.Person.get_width" title="Permalink to this definition">¶</a></dt>
 <dd><p>keypoints: 5: LEFT SHOULDER, 6: RIGHT SHOULDER.
 :return:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="entities.person.Person.infer_lc_keypoints">
-<code class="sig-name descname">infer_lc_keypoints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prev_person</span></em><span class="sig-paren">)</span><a class="headerlink" href="#entities.person.Person.infer_lc_keypoints" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person.Person.infer_lc_keypoints">
+<code class="sig-name descname">infer_lc_keypoints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prev_person</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person.Person.infer_lc_keypoints" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will be used when creating the frame groups.
 It takes the Person of the previous frame and uses its keypoits
 to infer the keypoints of “self”.
@@ -227,8 +228,8 @@ relative to the neck is used in the current person</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="entities.person.Person.infer_point">
-<code class="sig-name descname">infer_point</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em>, <em class="sig-param"><span class="n">prev_person</span></em><span class="sig-paren">)</span><a class="headerlink" href="#entities.person.Person.infer_point" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person.Person.infer_point">
+<code class="sig-name descname">infer_point</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em>, <em class="sig-param"><span class="n">prev_person</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person.Person.infer_point" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the position of the neck and the same keypoint from the previous frame to infer this one.
 Same confidence is applied</p>
 <dl class="simple">
@@ -239,8 +240,8 @@ prev_person (Person): Person from the previous frame</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="entities.person.Person.is_valid_first">
-<code class="sig-name descname">is_valid_first</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#entities.person.Person.is_valid_first" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person.Person.is_valid_first">
+<code class="sig-name descname">is_valid_first</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person.Person.is_valid_first" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function determines if the frame should be considered for training.
 Before it was embedded inside the pipeline of DataProcessor. Now it’s a function,
 so conditions can be changed based on performance.</p>
@@ -252,9 +253,9 @@ so conditions can be changed based on performance.</p>
 
 </dd></dl>
 
-<span class="target" id="module-entities.person_frames"></span><dl class="py class">
-<dt id="entities.person_frames.PersonMovement">
-<em class="property">class </em><code class="sig-prename descclassname">entities.person_frames.</code><code class="sig-name descname">PersonMovement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">list_persons</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">joints_remove</span><span class="o">=</span><span class="default_value">13, 14, 15, 16</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'LSTM'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#entities.person_frames.PersonMovement" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-source.entities.person_frames"></span><dl class="py class">
+<dt id="source.entities.person_frames.PersonMovement">
+<em class="property">class </em><code class="sig-prename descclassname">source.entities.person_frames.</code><code class="sig-name descname">PersonMovement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">list_persons</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">joints_remove</span><span class="o">=</span><span class="default_value">13, 14, 15, 16</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'LSTM'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person_frames.PersonMovement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts coordinates from a list of persons. The coordinates extracted
 are the input for all the models that predict actions.</p>
 <dl class="simple">
@@ -267,8 +268,8 @@ are the input for all the models that predict actions.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="entities.person_frames.PersonMovement.get_vector">
-<code class="sig-name descname">get_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">times_v</span></em>, <em class="sig-param"><span class="n">joints_remove</span></em><span class="sig-paren">)</span><a class="headerlink" href="#entities.person_frames.PersonMovement.get_vector" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person_frames.PersonMovement.get_vector">
+<code class="sig-name descname">get_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">times_v</span></em>, <em class="sig-param"><span class="n">joints_remove</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person_frames.PersonMovement.get_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get coordinates vector from a series of frames.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>times_v (int): Times the body velocity is repeated in the resulting vector.
@@ -281,8 +282,8 @@ vectors of joints positions and velocities.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="entities.person_frames.PersonMovement.get_vector_lstm">
-<code class="sig-name descname">get_vector_lstm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">joints_remove</span></em><span class="sig-paren">)</span><a class="headerlink" href="#entities.person_frames.PersonMovement.get_vector_lstm" title="Permalink to this definition">¶</a></dt>
+<dt id="source.entities.person_frames.PersonMovement.get_vector_lstm">
+<code class="sig-name descname">get_vector_lstm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">joints_remove</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.entities.person_frames.PersonMovement.get_vector_lstm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get coordinates vector (only positions) from a series of frames.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>joints_remove (tuple): Joints that will be removed and not used in the final vector</p>
@@ -295,14 +296,14 @@ vectors of joints positions and velocities.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-nn_models.model">
-<span id="feed-forward-model"></span><h1>Feed Forward Model<a class="headerlink" href="#module-nn_models.model" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-nn_models.lstm_model"></span></div>
-<div class="section" id="module-controller">
-<span id="firefox-controller"></span><h1>Firefox Controller<a class="headerlink" href="#module-controller" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-source.nn_models.model">
+<span id="feed-forward-model"></span><h1>Feed Forward Model<a class="headerlink" href="#module-source.nn_models.model" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-source.nn_models.lstm_model"></span></div>
+<div class="section" id="module-source.controller">
+<span id="firefox-controller"></span><h1>Firefox Controller<a class="headerlink" href="#module-source.controller" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="controller.Controller">
-<em class="property">class </em><code class="sig-prename descclassname">controller.</code><code class="sig-name descname">Controller</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classes</span></em>, <em class="sig-param"><span class="n">initial_url</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">driver_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_rotation</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">coordinates</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#controller.Controller" title="Permalink to this definition">¶</a></dt>
+<dt id="source.controller.Controller">
+<em class="property">class </em><code class="sig-prename descclassname">source.controller.</code><code class="sig-name descname">Controller</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classes</span></em>, <em class="sig-param"><span class="n">initial_url</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">driver_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time_rotation</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">coordinates</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.controller.Controller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class to control the movement in Google Street View. It only works with Firefox.
 If there is no guess about where to start (initial_url or coordinates) it starts
 in Zaragoza (Spain).</p>
@@ -311,8 +312,8 @@ in Zaragoza (Spain).</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="controller.Controller.perform_action">
-<code class="sig-name descname">perform_action</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i_action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#controller.Controller.perform_action" title="Permalink to this definition">¶</a></dt>
+<dt id="source.controller.Controller.perform_action">
+<code class="sig-name descname">perform_action</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i_action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.controller.Controller.perform_action" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform an action given its index within self.classes</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>i_action (int): index of classes list</p>
@@ -321,8 +322,8 @@ in Zaragoza (Spain).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="controller.Controller.perform_action_name">
-<code class="sig-name descname">perform_action_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#controller.Controller.perform_action_name" title="Permalink to this definition">¶</a></dt>
+<dt id="source.controller.Controller.perform_action_name">
+<code class="sig-name descname">perform_action_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.controller.Controller.perform_action_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform action given its name.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>action (str): Name of the action to perform. As it uses a mapper, it must be one of [‘walk’, ‘stand’, ‘left’, ‘right’]</p>
@@ -333,14 +334,14 @@ in Zaragoza (Spain).</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="controller.DistanceMeter">
-<em class="property">class </em><code class="sig-prename descclassname">controller.</code><code class="sig-name descname">DistanceMeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">starting_url</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">starting_coords</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'km'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#controller.DistanceMeter" title="Permalink to this definition">¶</a></dt>
+<dt id="source.controller.DistanceMeter">
+<em class="property">class </em><code class="sig-prename descclassname">source.controller.</code><code class="sig-name descname">DistanceMeter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">starting_url</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">starting_coords</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'km'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.controller.DistanceMeter" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class is used to keep track of the distance made during a walk.
 It retrieves coordinates from a google maps url using regex and calculates
 distance walked.</p>
 <dl class="py method">
-<dt id="controller.DistanceMeter.distance_from_coords">
-<em class="property">static </em><code class="sig-name descname">distance_from_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords1</span></em>, <em class="sig-param"><span class="n">coords2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#controller.DistanceMeter.distance_from_coords" title="Permalink to this definition">¶</a></dt>
+<dt id="source.controller.DistanceMeter.distance_from_coords">
+<em class="property">static </em><code class="sig-name descname">distance_from_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords1</span></em>, <em class="sig-param"><span class="n">coords2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.controller.DistanceMeter.distance_from_coords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets two pairs of coordinates in decimal format and calculates distance
 between points</p>
 <dl class="simple">
@@ -353,8 +354,8 @@ coords2 (list): Coordinates in decimal format (lat, long)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="controller.DistanceMeter.retrieve_coords">
-<code class="sig-name descname">retrieve_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em><span class="sig-paren">)</span><a class="headerlink" href="#controller.DistanceMeter.retrieve_coords" title="Permalink to this definition">¶</a></dt>
+<dt id="source.controller.DistanceMeter.retrieve_coords">
+<code class="sig-name descname">retrieve_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.controller.DistanceMeter.retrieve_coords" title="Permalink to this definition">¶</a></dt>
 <dd><p>From a Google Maps URL it obtains the coordinates</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>url (str): URL from which coordinates have to be extracted</p>
@@ -365,8 +366,8 @@ coords2 (list): Coordinates in decimal format (lat, long)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="controller.DistanceMeter.update_distance">
-<code class="sig-name descname">update_distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em><span class="sig-paren">)</span><a class="headerlink" href="#controller.DistanceMeter.update_distance" title="Permalink to this definition">¶</a></dt>
+<dt id="source.controller.DistanceMeter.update_distance">
+<code class="sig-name descname">update_distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.controller.DistanceMeter.update_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>self.distance keeps record of all the distance made in the walk.
 This function updates this value.</p>
 <dl class="simple">
@@ -378,11 +379,11 @@ This function updates this value.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-webcam_predictor">
-<span id="webcam-wrapper"></span><h1>Webcam Wrapper<a class="headerlink" href="#module-webcam_predictor" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-source.webcam_predictor">
+<span id="webcam-wrapper"></span><h1>Webcam Wrapper<a class="headerlink" href="#module-source.webcam_predictor" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="webcam_predictor.WebcamPredictor">
-<em class="property">class </em><code class="sig-prename descclassname">webcam_predictor.</code><code class="sig-name descname">WebcamPredictor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classes</span><span class="o">=</span><span class="default_value">['walk', 'stand', 'left', 'right']</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'LSTM'</span></em>, <em class="sig-param"><span class="n">pca_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nn_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pose_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scaler_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_video_dim</span><span class="o">=</span><span class="default_value">640, 480</span></em>, <em class="sig-param"><span class="n">coordinates</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_limit</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">driver_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">threshold_nn</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">time_rotation</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#webcam_predictor.WebcamPredictor" title="Permalink to this definition">¶</a></dt>
+<dt id="source.webcam_predictor.WebcamPredictor">
+<em class="property">class </em><code class="sig-prename descclassname">source.webcam_predictor.</code><code class="sig-name descname">WebcamPredictor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classes</span><span class="o">=</span><span class="default_value">['walk', 'stand', 'left', 'right']</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'LSTM'</span></em>, <em class="sig-param"><span class="n">pca_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nn_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pose_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scaler_model_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_video_dim</span><span class="o">=</span><span class="default_value">640, 480</span></em>, <em class="sig-param"><span class="n">coordinates</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_limit</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">driver_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">threshold_nn</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">time_rotation</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.webcam_predictor.WebcamPredictor" title="Permalink to this definition">¶</a></dt>
 <dd><p>The main class in the virtual walking project. When models have been trained, it loads all these models
 and orchestrates everything. It controlls the acquisition of the frames from the webcam, the creation of the
 frame groups, the Google Maps Controller and the output from the webcam. After it’s initialised, predictor is its
@@ -392,8 +393,8 @@ main class.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="webcam_predictor.WebcamPredictor.predictor">
-<code class="sig-name descname">predictor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_dim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_skeleton</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#webcam_predictor.WebcamPredictor.predictor" title="Permalink to this definition">¶</a></dt>
+<dt id="source.webcam_predictor.WebcamPredictor.predictor">
+<code class="sig-name descname">predictor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_dim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_skeleton</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">times_v</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.webcam_predictor.WebcamPredictor.predictor" title="Permalink to this definition">¶</a></dt>
 <dd><p>The main method in this class. It processes the input form the webcam,
 creating the groups of frames from which the action will be predicted.
 The selection is based on whether each frame is suitable as a first frame
@@ -410,8 +411,8 @@ times_v (int, optional): Currently not used. Defaults to 1.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="webcam_predictor.WebcamPredictor.process_list_lstm">
-<code class="sig-name descname">process_list_lstm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">buffer</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#webcam_predictor.WebcamPredictor.process_list_lstm" title="Permalink to this definition">¶</a></dt>
+<dt id="source.webcam_predictor.WebcamPredictor.process_list_lstm">
+<code class="sig-name descname">process_list_lstm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">buffer</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#source.webcam_predictor.WebcamPredictor.process_list_lstm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processs a list of frames with LSTM.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>buffer (list): List of persons extracted from frames.</p>
@@ -439,14 +440,17 @@ times_v (int, optional): Currently not used. Defaults to 1.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/Logo.png" alt="Logo"/>
+            </a></p>
   <h3><a href="#">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Virtual Walk on Google Street View</a></li>
-<li><a class="reference internal" href="#module-dataprocessing">Data Processing</a></li>
-<li><a class="reference internal" href="#module-entities.person">Person entity</a></li>
-<li><a class="reference internal" href="#module-nn_models.model">Feed Forward Model</a></li>
-<li><a class="reference internal" href="#module-controller">Firefox Controller</a></li>
-<li><a class="reference internal" href="#module-webcam_predictor">Webcam Wrapper</a></li>
+<li><a class="reference internal" href="#module-source.dataprocessing">Data Processing</a></li>
+<li><a class="reference internal" href="#module-source.entities.person">Person entity</a></li>
+<li><a class="reference internal" href="#module-source.nn_models.model">Feed Forward Model</a></li>
+<li><a class="reference internal" href="#module-source.controller">Firefox Controller</a></li>
+<li><a class="reference internal" href="#module-source.webcam_predictor">Webcam Wrapper</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 

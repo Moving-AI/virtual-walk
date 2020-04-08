@@ -14,32 +14,32 @@ Hola me llamo Gonzalo.
 
 Data Processing
 ===================
-.. automodule:: dataprocessing
+.. automodule:: source.dataprocessing
    :members:
 
 Person entity
 ===================
-.. automodule:: entities.person
+.. automodule:: source.entities.person
    :members:
 
-.. automodule:: entities.person_frames
+.. automodule:: source.entities.person_frames
    :members:
 
 Feed Forward Model
 ===================
-.. automodule:: nn_models.model
+.. automodule:: source.nn_models.model
    :members:
-.. automodule:: nn_models.lstm_model
+.. automodule:: source.nn_models.lstm_model
    :members:
 
 Firefox Controller
 ===================
-.. automodule:: controller
+.. automodule:: source.controller
    :members:
 
 Webcam Wrapper
 ===================
-.. automodule:: webcam_predictor
+.. automodule:: source.webcam_predictor
    :members:
 
 Indices and tables
