@@ -38,7 +38,23 @@ def sigmoid(x):
 
 
 class Person:
+    """Person detected in a frame. With this class a person entity can be extracted from an image.
+    All the keypoints are extracted and keypoints saved.
+    
+    Returns:
+        Person:
+    """
     def __init__(self, heatmap=None, offsets=None, rescale=(1,1), threshold=0.7, path_txt=None, show_head=False):
+        """Person Class constructor.
+        
+        Args:
+            heatmap (ndarray, optional): [description]. Defaults to None.
+            offsets (tuple, optional): [description]. Defaults to None.
+            rescale (tuple, optional): [description]. Defaults to (1,1).
+            threshold (float, optional): [description]. Defaults to 0.7.
+            path_txt (str, optional): [description]. Defaults to None.
+            show_head (bool, optional): [description]. Defaults to False.
+        """
         if path_txt is None:
             self.keypoints = self.get_keypoints(heatmap, offsets)
             self.keypoints.append(self._infer_neck())
