@@ -309,7 +309,7 @@ class DataProcessor:
         """
         logger.debug("Calculating people list from interval {} in file {}".format(interval, fle))
         if images_path is None:
-            PATH = Path(__file__).1parents[2].joinpath("resources/{}".format(fle))
+            PATH = Path(__file__).parents[2].joinpath("resources/{}".format(fle))
         else:
             images_path = Path(images_path).joinpath("/{}".format(fle))
 
