@@ -102,14 +102,16 @@ class WebcamPredictor:
         if pose_model_path is None:
             if backbone == 'resnet':
                 POSE_PATH = Path(__file__).parents[1].joinpath('models/resnet_stride{}/model-stride{}.json'.format(self.output_stride, self.output_stride))
-                rescale = (1,1)
+                input_dim = (257, 200)
+                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
             else:
                 POSE_PATH = Path(__file__).parents[1].joinpath('models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
                 rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
         else:
             POSE_PATH = pose_model_path
             if backbone == 'resnet':
-                rescale = (1,1)
+                input_dim = (257, 200)
+                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
             else:
                 rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
 

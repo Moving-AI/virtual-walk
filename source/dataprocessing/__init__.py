@@ -53,7 +53,7 @@ class DataProcessor:
             MODEL_PATH = model_path
 
         if backbone == 'resnet':
-            dimensions = (480, 640)
+            dimensions = (200, 256)
             self.model, graph = funciones.load_model_resnet(str(MODEL_PATH))  # Actually a session.
             self.input_details, self.output_details = funciones.get_tensors_graph(graph)
             self.prepare_frame = funciones.prepare_frame_resnet
