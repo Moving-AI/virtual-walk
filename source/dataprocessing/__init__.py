@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 
 import source.funciones as funciones
-from source.funciones import read_labels_txt
 from source.entities.person import Person
 from source.entities.person_frames import PersonMovement
+from source.funciones import read_labels_txt
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -31,7 +31,9 @@ class DataProcessor:
     Returns:
         DataProcessor:
     """
-    def __init__(self, model_path = None, input_dim=(257, 257), threshold=0.5, rescale=(1,1)):
+
+    def __init__(self, model_path=None, input_dim=(257, 257), threshold=0.5, rescale=(1, 1), backbone='resnet',
+                 output_stride=16):
         """Constructor for the DataProcessor class.
         
         Args:
@@ -42,17 +44,32 @@ class DataProcessor:
             rescale (tuple, optional): Rescaling factor in the output. Defaults to (1,1).
         """
         if model_path is None:
-            MODEL_PATH = Path(__file__).parents[2].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
+            if backbone == 'resnet':
+                MODEL_PATH = Path(__file__).parents[2].joinpath('models/resnet_stride16/model-stride16.json')
+            else:
+                MODEL_PATH = Path(__file__).parents[2].joinpath(
+                    "models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
         else:
             MODEL_PATH = model_path
 
-        self.model, self.input_details, self.output_details = funciones.load_model(str(MODEL_PATH))
-        self.input_dim = input_dim
+        if backbone == 'resnet':
+            dimensions = (480, 640)
+            self.model, graph = funciones.load_model_resnet(str(MODEL_PATH))  # Actually a session.
+            self.input_details, self.output_details = funciones.get_tensors_graph(graph)
+            self.prepare_frame = funciones.prepare_frame_resnet
+            self.input_dim = [(int(x) // output_stride) * output_stride + 1 for x in dimensions]
+            self.get_model_output = funciones.get_model_output_resnet
+        else:
+            self.model, self.input_details, self.output_details = funciones.load_model_mobilenet(str(MODEL_PATH))
+            self.prepare_frame = funciones.prepare_frame_mobilenet
+            self.input_dim = input_dim
+            self.get_model_output = funciones.get_model_output_mobilenet
+
         self.threshold = threshold
         self.rescale = rescale
 
     @staticmethod
-    def process_video(filename, input_path = None, output_path = None, output_shape=(257, 257), fps_reduce=2, angle=0):
+    def process_video(filename, input_path=None, output_path=None, output_shape=(257, 257), fps_reduce=2, angle=0):
         """Process a video from the resources folder and saves all the frames
         inside a folder with the name of the video
         FILENAME_frame_X.jpg
@@ -70,10 +87,9 @@ class DataProcessor:
             OUTPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
 
         if input_path is None:
-            INPUT_PATH = Path(__file__).parents[2].joinpath("resources/{}".format(filename+".mp4"))
+            INPUT_PATH = Path(__file__).parents[2].joinpath("resources/{}".format(filename + ".mp4"))
         else:
-            INPUT_PATH = Path(output_path).joinpath("/{}".format(filename+".mp4"))
-
+            INPUT_PATH = Path(output_path).joinpath("/{}".format(filename + ".mp4"))
 
         try:
             os.mkdir(OUTPUT_PATH)
@@ -97,7 +113,9 @@ class DataProcessor:
             frame = imutils.rotate(frame, angle)
 
             if count % fps_reduce == 0:
-                cv2.imwrite(str(OUTPUT_PATH.joinpath("{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce))), frame)
+                cv2.imwrite(
+                    str(OUTPUT_PATH.joinpath("{}_frame_{}.jpg".format(filename.split(".")[0], count // fps_reduce))),
+                    frame)
             count = count + 1
 
             if cv2.waitKey(10) & 0xFF == ord('q'):
@@ -176,7 +194,7 @@ class DataProcessor:
         df.to_csv(str(output_file), index=False, header=False)
         return df
 
-    def get_coordinates(self, labels_path=None, actions=None, n=5, times_v=10):
+    def get_coordinates(self, labels_path=None, n=5, times_v=10):
         """This functions is a wrapper that makes this steps:
             - Gets actions and frame intervals from the labels file
             - Processes the frame intervals, keeping only the valid ones.
@@ -185,8 +203,6 @@ class DataProcessor:
         Args:
             labels_path (str, optional): Absolute for the labels file. If none, it is searched inside
             action-recognition/resources
-            actions (list, optional): Actions contained in the label file. If None, the program searches
-            them
             n (int, optional): Lenght of the frame list to process. Defaults to 5.
             times_v (int, optional): Times speeds of the points is introduced as coordinate. Defaults to 10.
         
@@ -209,13 +225,14 @@ class DataProcessor:
                 if len(group) == 0:
                     continue
                 else:
-                    if video not in coordinates_dict: coordinates_dict[video] = []
+                    if video not in coordinates_dict:
+                        coordinates_dict[video] = []
                     persons = [element[1] for element in group]
                     coordinates = PersonMovement(persons, times_v, joints_remove=(13, 14, 15, 16)).coords
                     coordinates_dict[video].append(coordinates)
         return coordinates_dict
 
-    def process_frame(self, image_path):
+    def process_frame(self, image_path, output_stride):
         """Receives a frame path and returns the person associated
         
         Args:
@@ -226,31 +243,24 @@ class DataProcessor:
         """
         logger.debug("Processing frame {}".format(image_path.split("/")[-1]))
         frame = cv2.imread(image_path)
-        frame = funciones.prepare_frame(frame, self.input_dim)
-        output_data, offset_data = funciones.get_model_output(self.model,
-                                                              frame,
-                                                              self.input_details,
-                                                              self.output_details)
-        return Person(output_data, offset_data, self.rescale, self.threshold)
+        frame = self.prepare_frame(frame, self.input_dim)
+        output_data, offset_data = self.get_model_output(self.model, frame, self.input_details, self.output_details)
+        return Person(output_data, offset_data, self.rescale, self.threshold, output_stride=output_stride)
 
-    
-    def process_live_frame(self, frame):
+    def process_live_frame(self, frame, output_stride):
         """Receives a frame path and returns the person associated
         
         Args:
-            image_path (str): String containig the path of an image
+
         
         Returns:
             Person: Person associated to that frame.
         """
         logger.debug("Processing frame passed to the function (live).")
-        #frame = cv2.imread(image_path)
-        frame = funciones.prepare_frame(frame, self.input_dim)
-        output_data, offset_data = funciones.get_model_output(self.model,
-                                                              frame,
-                                                              self.input_details,
-                                                              self.output_details)
-        return Person(output_data, offset_data, self.rescale, self.threshold)
+
+        frame = self.prepare_frame(frame, self.input_dim)
+        output_data, offset_data = self.get_model_output(self.model, frame, self.input_details, self.output_details)
+        return Person(output_data, offset_data, self.rescale, self.threshold, output_stride=output_stride)
 
     def get_frame_groups(self, actions, labels_path, n=5):
         """From a labels path, a list of actions and a number of frames per
@@ -290,13 +300,13 @@ class DataProcessor:
         logger.debug("Getting valid persons from file {}, interval {}".format(fle, interval))
         persons_list = self.frame_interval_to_people_list(fle, interval)
 
-        #Now we return all the persons in the interval. Valids will be filtered
-        #Into consideration the position in the frame.
+        # Now we return all the persons in the interval. Valids will be filtered
+        # Into consideration the position in the frame.
 
-        #persons_list = [element for element in persons_list if element[1].is_valid()]
+        # persons_list = [element for element in persons_list if element[1].is_valid()]
         return persons_list
 
-    def frame_interval_to_people_list(self, fle, interval, images_path = None):
+    def frame_interval_to_people_list(self, fle, interval, images_path=None):
         """From an interval [start, end] of frames from video, returns a list
         of tuples (index, person(i_Frame)).
         
@@ -327,30 +337,29 @@ class DataProcessor:
         valid, result, aux = 0, [], []
         if lst is not None:
             for index, i in enumerate(lst):
-                
-                #if it's not the first frame --> Infer keypoints
-                #if valid > 0:
+
+                # if it's not the first frame --> Infer keypoints
+                # if valid > 0:
                 #    i[1].infer_lc_keypoints(lst[index-1][1])
 
-                #If is the first frame and the frame is valid
+                # If is the first frame and the frame is valid
                 if valid == 0 and i[1].is_valid_first():
                     # New group
                     aux.append(i)
                     valid += 1
 
-                #If it's not the first and frames are contiguous
+                # If it's not the first and frames are contiguous
                 elif valid > 0 and i[0] - aux[valid - 1][0] == 1:
-                    
 
                     # If this frame does not complete a group then append to aux
-                    if  valid < n - 1  and i[1].is_valid_other():
-                        i[1].infer_lc_keypoints(lst[index-1][1])
+                    if valid < n - 1 and i[1].is_valid_other():
+                        i[1].infer_lc_keypoints(lst[index - 1][1])
                         # Value is valid
                         aux.append(i)
                         valid += 1
                     # If this frame completes a group append the resutl
-                    elif  valid == n - 1  and i[1].is_valid_other():
-                        i[1].infer_lc_keypoints(lst[index-1][1])
+                    elif valid == n - 1 and i[1].is_valid_other():
+                        i[1].infer_lc_keypoints(lst[index - 1][1])
                         # Group is now complete
                         aux.append(i)
                         result.append(aux)
@@ -366,7 +375,7 @@ class DataProcessor:
                     else:
                         aux = []
                         valid = 0
-                #If frames wew not contiguous and this frame is valid as first, we try that
+                # If frames wew not contiguous and this frame is valid as first, we try that
                 elif valid > 0 and i[0] - aux[valid - 1][0] != 1 and i[1].is_valid_first():
                     aux = [i]
                     valid = 1

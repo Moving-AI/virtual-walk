@@ -2,14 +2,14 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import tfjs_graph_converter as tfjs
-import utils.funciones as f
-from utils.person import Person
+
+import source.funciones as f
+from source.entities.person import Person
 
 path = r'./models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
-model, input_details, output_details = f.load_model(path)
+# model, input_details, output_details = f.load_model(path)
 INPUT_DIM = (257, 257)
 original = (640, 480)
-
 
 
 def infer_model(img, sess, input_tensor, output_tensor_names):
@@ -55,9 +55,9 @@ def video(output_dim=INPUT_DIM):
     cv2.destroyAllWindows()
 
 def video_resnet(output_dim=INPUT_DIM):
-    output_stride = 16
+    output_stride = 32
     cap = cv2.VideoCapture(0)
-    graph = load_model('models/resnet_stride16/model-stride16.json')
+    graph = load_model('models/resnet_stride32/model-stride32.json')
     input_tensor, output_tensor_names = get_tensors_graph(graph)
     sess = tf.compat.v1.Session(graph=graph)
     img_width, img_height = (480, 640)
@@ -72,8 +72,7 @@ def video_resnet(output_dim=INPUT_DIM):
         offsets = np.squeeze(res[2], 0)
         heatmaps = np.squeeze(res[3], 0)
 
-        p = Person(heatmaps, offsets, output_stride=16, threshold=0.5)
-
+        p = Person(heatmaps, offsets, output_stride=output_stride, threshold=0.5)
         frame = p.draw_points(frame)
 
         # Display the resulting frame

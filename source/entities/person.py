@@ -46,8 +46,8 @@ class Person:
     """
     def __init__(self, heatmap=None, offsets=None, rescale=(1,1), threshold=0.7, path_txt=None,
                 show_head=False, output_stride=32):        
-    """Person Class constructor.
-        
+        """Person Class constructor.
+
         Args:
             heatmap (ndarray, optional): [description]. Defaults to None.
             offsets (tuple, optional): [description]. Defaults to None.

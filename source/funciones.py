@@ -6,10 +6,11 @@ import re
 import cv2
 import numpy as np
 import tensorflow as tf
+import tfjs_graph_converter as tfjs
 
 logger = logging.getLogger(__name__)
 
-def load_model(path):
+def load_model_mobilenet(path):
     model = tf.lite.Interpreter(path)
     model.allocate_tensors()
     input_details = model.get_input_details()
@@ -17,23 +18,32 @@ def load_model(path):
 
     return model, input_details, output_details
 
-def prepare_frame(frame, input_dim):
+def prepare_frame_mobilenet(frame, *args):
+    input_dim = (257, 257)
     frame = tf.reshape(tf.image.resize(frame, input_dim), [1, input_dim[0], input_dim[1], 3])
-    
-    #print(frame.shape)
     frame = (np.float32(frame) - 127.5) / 127.5
     return frame
 
-def prepare_list_frames(frames, input_dim):
-    return [prepare_frame(frame, input_dim) for frame in frames]
+def prepare_frame_resnet(frame, input_dim):
+    frame = tf.reshape(tf.image.resize(frame, input_dim), [1, input_dim[0], input_dim[1], 3])
+    return frame.numpy()
 
-def get_model_output(model, frame, input_details, output_details):
+def prepare_list_frames(frames, input_dim):
+    # I think this function is not used, so it takes resnet by default.
+    return [prepare_frame_resnet(frame, input_dim) for frame in frames]
+
+def get_model_output_resnet(sess, frame, input_details, output_details):
+    results = infer_model(frame, sess, input_details, output_details)
+    offset_data = np.squeeze(results[2], 0)
+    output_data = np.squeeze(results[3], 0)
+    return output_data, offset_data
+
+def get_model_output_mobilenet(model, frame, input_details, output_details):
     model.set_tensor(input_details[0]['index'], frame)
     model.invoke()
 
     output_data = np.squeeze(model.get_tensor(output_details[0]['index']))
     offset_data = np.squeeze(model.get_tensor(output_details[1]['index']))
-
     return output_data, offset_data
 
 def read_labels_txt(path, actions):
@@ -105,3 +115,20 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
+def infer_model(img, sess, input_tensor, output_tensor_names):
+    results = sess.run(output_tensor_names, feed_dict={input_tensor: img})
+    return results
+
+def get_tensors_graph(graph):
+    input_tensor_names = tfjs.util.get_input_tensors(graph)
+    output_tensor_names = tfjs.util.get_output_tensors(graph)
+    input_tensor = graph.get_tensor_by_name(input_tensor_names[0])
+
+    return input_tensor, output_tensor_names
+
+
+def load_model_resnet(model_path):
+    graph = tfjs.api.load_graph_model(model_path)
+    sess = tf.compat.v1.Session(graph=graph)
+    return sess, graph
