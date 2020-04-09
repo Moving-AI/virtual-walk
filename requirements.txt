@@ -4,6 +4,5 @@ opencv_python==4.2.0.32
 tensorboard==2.1.1
 selenium==3.141.0
 numpy==1.18.2
-tensorflow_cpu==2.1.0
 scikit_learn==0.22.2.post1
 tensorflow==2.1.0
