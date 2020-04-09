@@ -109,7 +109,7 @@ class FullModel:  # Not Model because it would shadow keras'
             opt = Adam(learning_rate=lr, clipnorm=0.5)
         else:
             raise ValueError('Not implemented compiler')
-        self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+        self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['categorical_accuracy'])
 
     def train(self, X_train, Y_train, batch_size, epochs, X_test=None, Y_test=None, is_one_hot=False, callbacks=[], verbose=0):
         self.train_scaler(X_train)

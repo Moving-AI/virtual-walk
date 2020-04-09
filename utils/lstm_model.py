@@ -93,7 +93,7 @@ class LSTMModel:
             opt = Adam(learning_rate=lr)
         else:
             raise ValueError('Not implemented compiler')
-        self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+        self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['categorical_accuracy'])
 
 
     @staticmethod
