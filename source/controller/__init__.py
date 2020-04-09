@@ -16,10 +16,15 @@ logger.setLevel(logging.INFO)
 
 
 class Controller:
+    """Class to control the movement in Google Street View. It only works with Firefox.
+    If there is no guess about where to start (initial_url or coordinates) it starts
+    in Zaragoza (Spain).
+    
+    Returns:
+        Controller:
+    """
     def __init__(self, classes, initial_url=None, driver_path=None, time_rotation=0.5, coordinates=None):
-        """Class to control the movement in Google Street View. It only works with Firefox.
-        If there is no guess about where to start (initial_url or coordinates) it starts
-        in Zaragoza (Spain).
+        """Constructor for Controller class.
         
         Args:
             classes (list): Generally, ['walk', 'stand', 'left', 'right'], 
@@ -107,9 +112,9 @@ class Controller:
         """Perform action given its name.
         
         Args:
-            action (str): Name of the action to perform. As it uses a mapper, it must be one of
-        ['walk', 'stand', 'left', 'right']
+            action (str): Name of the action to perform. As it uses a mapper, it must be one of ['walk', 'stand', 'left', 'right']
         """
+
         self.action_mapper[action]()
         self.distance_calculator.update_distance(self._driver.current_url)
         logging.info("You have made {} meters".format(self.distance_calculator.distance))

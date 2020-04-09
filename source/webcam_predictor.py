@@ -5,11 +5,11 @@ from pathlib import Path
 
 import cv2
 
-from utils.controller import Controller
-from utils.dataprocessor import DataProcessor
-from utils.lstm_model import LSTMModel
-from utils.model import FullModel
-from utils.person_frames import PersonMovement
+from source.controller import Controller
+from source.dataprocessing import DataProcessor
+from source.nn_models.lstm_model import LSTMModel
+from source.nn_models.model import FullModel
+from source.entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -211,7 +211,8 @@ class WebcamPredictor:
                 break
 
     def process_list(self, buffer, times_v):
-        person_movement = PersonMovement(buffer, times_v)
+        person_movement = PersonMovement(buffer, times_v, model = "NN")
+        logging.info("Shape {}".format(person_movement.coords.shape))
 
         prediction, probabilities = self.model.predict(person_movement.coords, self.threshold_nn)
         prediction = prediction[0]
