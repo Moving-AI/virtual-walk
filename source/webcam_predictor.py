@@ -162,7 +162,9 @@ class WebcamPredictor:
         buffer = []
         buffer_og = []  # For populating future buffers
         valid = 0
-        while True:
+        n_times = 0
+        times = []
+        while n_times < 500:
             # _, frame_orig = capture.read()
             # frame = cv2.resize(frame_orig, network_frame_size, interpolation=cv2.INTER_LINEAR)
             _, frame = capture.read()
@@ -175,6 +177,9 @@ class WebcamPredictor:
                 buffer_og.append(person)
                 valid += 1
 
+                n_times += 1
+                times.append(time.time())
+
             elif 0 < valid < self.n_frames - 1 and person.is_valid_other():
                 # If valid as first, take into account for future frames
                 if person.is_valid_first():
@@ -186,6 +191,9 @@ class WebcamPredictor:
 
                 buffer.append(person)
                 valid += 1
+
+                n_times += 1
+                times.append(time.time())
             elif valid == self.n_frames - 1 and person.is_valid_other():
                 # Here is the ONLY case in which we process a group of frames
                 # If frame was valid for first initially, take into account for future frames
@@ -206,10 +214,17 @@ class WebcamPredictor:
                 else:
                     buffer = []
                     valid = 0
+                n_times += 1
+                times.append(time.time())
+
+
             elif person.is_valid_first():
                 buffer = [person]
                 buffer_og = [person]
                 valid = 1
+
+                n_times += 1
+                times.append(time.time())
 
             else:
                 buffer = []
@@ -220,10 +235,11 @@ class WebcamPredictor:
                 self._write_probabilities(frame, probabilities)
                 self._write_distance(frame, self.controller.distance_calculator.distance)
                 cv2.imshow('frame', frame)
-
+            logging.info("Ya llevamos {} ".format(n_times))
             # End of while
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+        return times
 
     def process_list(self, buffer, times_v):
         person_movement = PersonMovement(buffer, times_v, model = self.model)
