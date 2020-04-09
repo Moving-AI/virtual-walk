@@ -211,7 +211,7 @@ class WebcamPredictor:
                 break
 
     def process_list(self, buffer, times_v):
-        person_movement = PersonMovement(buffer, times_v, model = "NN")
+        person_movement = PersonMovement(buffer, times_v, model = self.model)
         logging.info("Shape {}".format(person_movement.coords.shape))
 
         prediction, probabilities = self.model.predict(person_movement.coords, self.threshold_nn)

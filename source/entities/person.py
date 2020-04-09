@@ -44,8 +44,9 @@ class Person:
     Returns:
         Person:
     """
-    def __init__(self, heatmap=None, offsets=None, rescale=(1,1), threshold=0.7, path_txt=None, show_head=False):
-        """Person Class constructor.
+    def __init__(self, heatmap=None, offsets=None, rescale=(1,1), threshold=0.7, path_txt=None,
+                show_head=False, output_stride=32):        
+    """Person Class constructor.
         
         Args:
             heatmap (ndarray, optional): [description]. Defaults to None.
@@ -56,11 +57,10 @@ class Person:
             show_head (bool, optional): [description]. Defaults to False.
         """
         if path_txt is None:
-            self.keypoints = self.get_keypoints(heatmap, offsets)
+            self.keypoints = self.get_keypoints(heatmap, offsets, output_stride)
             self.keypoints.append(self._infer_neck())
             self.threshold = threshold
             # self.keypoints.append(self._infer_hip())
-            self.pose = self.infer_pose(self.keypoints) # This is useless for now TODO:CHANGE
 
             self.inferred_points = [list(range(19))]
         else:
@@ -111,9 +111,6 @@ class Person:
         keypoints = [KeyPoint(i, np.flip(pos), confidences[i]) for i, pos in enumerate(image_positions)]
 
         return keypoints
-
-    def infer_pose(self, coords):
-        return "Unknown"
 
     def _get_coords(self):
         return [kp.point() for kp in self.keypoints if kp.confidence > self.threshold]
