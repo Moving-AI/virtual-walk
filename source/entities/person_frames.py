@@ -1,10 +1,28 @@
 import math
-
 import numpy as np
 
 
 class PersonMovement:
+    """Extracts coordinates from a list of persons. The coordinates extracted
+    are the input for all the models that predict actions.
+
+    It has two main functions:
+        - get_vector: Get positions of keypoints and joint speeds. Used for Non LSTM models
+        - get_vector: Get positions of keypoints. Input for LSTM model.
+    
+    Returns:
+        PersonMovement:
+    """
     def __init__(self, list_persons, times_v=10, joints_remove=(13, 14, 15, 16), model='LSTM'):
+        """PersonMovement constructor.
+        
+        Args:
+            list_persons (list): List of 5 persons to extract coordinates from.
+            times_v (int, optional): Times speeds are repeated in the coordinates. Defaults to 10.
+            joints_remove (tuple, optional): Joints to be removed. Keys can be found in person.py.
+            Defaults to (13, 14, 15, 16).
+            model (str, optional): Whether LSTM model or Feed Forward NN. Defaults to 'LSTM'.
+        """
         self.list_persons = list_persons
         self.n_frames = len(list_persons)
         if model == 'LSTM':
@@ -21,7 +39,7 @@ class PersonMovement:
         
         Returns:
             ndarray: Flattened vector of [x + v * times_v + v] dimensions. Where x and v are the flattened
-        vectors of joints positions and velocities.
+            vectors of joints positions and velocities.
         """
 
         #Array of dimensions (len(list_persons), n_keypoints, 2)

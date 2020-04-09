@@ -6,10 +6,13 @@ data
 models
 *.txt
 utils/__pycache__
-resources/*
+resources/**
 .idea
 logs
 .vscode
 *.zip
 *.exe
 *.log
+!.empty
+__pycache__
+!requirements.txt

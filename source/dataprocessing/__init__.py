@@ -9,10 +9,10 @@ import imutils
 import numpy as np
 import pandas as pd
 
-import utils.funciones as funciones
-from utils.funciones import read_labels_txt
-from utils.person import Person
-from utils.person_frames import PersonMovement
+import source.funciones as funciones
+from source.funciones import read_labels_txt
+from source.entities.person import Person
+from source.entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -23,9 +23,26 @@ logger.setLevel(logging.INFO)
 
 
 class DataProcessor:
+    """Class used to process data to generate training examples. Has the recquired functions
+    to read a video from a directory and extract the frames. Once a labels file is provided
+    with the valid frames for each video, the frame groups are made and training data is generated
+    and written in a file for later usage.
+    
+    Returns:
+        DataProcessor:
+    """
     def __init__(self, model_path = None, input_dim=(257, 257), threshold=0.5, rescale=(1,1)):
+        """Constructor for the DataProcessor class.
+        
+        Args:
+            model_path (str, optional): Path for the TFLite Posenet file. If None and by default is
+            searched in the root/models folder of the repository
+            input_dim (tuple, optional): Input dimension for the previously specified model. Defaults to (257, 257).
+            threshold (float, optional): Confidence threshold for considering a body joint valid. Defaults to 0.5.
+            rescale (tuple, optional): Rescaling factor in the output. Defaults to (1,1).
+        """
         if model_path is None:
-            MODEL_PATH = Path(__file__).parents[1].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
+            MODEL_PATH = Path(__file__).parents[2].joinpath("models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
         else:
             MODEL_PATH = model_path
 
@@ -48,12 +65,12 @@ class DataProcessor:
             angle (int): Angle that the video images should be rotated. 
         """
         if output_path is None:
-            OUTPUT_PATH = Path(__file__).parents[1].joinpath("resources/{}".format(filename))
+            OUTPUT_PATH = Path(__file__).parents[2].joinpath("resources/{}".format(filename))
         else:
             OUTPUT_PATH = Path(output_path).joinpath("/{}".format(filename))
 
         if input_path is None:
-            INPUT_PATH = Path(__file__).parents[1].joinpath("resources/{}".format(filename+".mp4"))
+            INPUT_PATH = Path(__file__).parents[2].joinpath("resources/{}".format(filename+".mp4"))
         else:
             INPUT_PATH = Path(output_path).joinpath("/{}".format(filename+".mp4"))
 
@@ -114,11 +131,11 @@ class DataProcessor:
             if append = True
         """
         if labels_path is None:
-            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+            labels_path = Path(__file__).parents[2].joinpath("resources/{}".format("labels.txt"))
         else:
             labels_path = Path(labels_path)
         if output_file is None:
-            output_file = Path(__file__).parents[1].joinpath("resources/{}".format("training_data.csv"))
+            output_file = Path(__file__).parents[2].joinpath("resources/{}".format("training_data.csv"))
         else:
             output_file = Path(output_file)
 
@@ -161,10 +178,10 @@ class DataProcessor:
 
     def get_coordinates(self, labels_path=None, actions=None, n=5, times_v=10):
         """This functions is a wrapper that makes this steps:
-        - Gets actions and frame intervals from the labels file
-        - Processes the frame intervals, keeping only the valid ones.
-        - Groups the frames in groups of n
-        - Coordinates are calculated from those groups
+            - Gets actions and frame intervals from the labels file
+            - Processes the frame intervals, keeping only the valid ones.
+            - Groups the frames in groups of n
+            - Coordinates are calculated from those groups
         Args:
             labels_path (str, optional): Absolute for the labels file. If none, it is searched inside
             action-recognition/resources
@@ -180,7 +197,7 @@ class DataProcessor:
 
         logger.info("Calculating coordinates from labels_path {}".format(labels_path))
         if labels_path is None:
-            labels_path = Path(__file__).parents[1].joinpath("resources/{}".format("labels.txt"))
+            labels_path = Path(__file__).parents[2].joinpath("resources/{}".format("labels.txt"))
         else:
             labels_path = Path(labels_path)
         actions = DataProcessor.find_actions(labels_path)
@@ -238,8 +255,6 @@ class DataProcessor:
     def get_frame_groups(self, actions, labels_path, n=5):
         """From a labels path, a list of actions and a number of frames per
         training data row gets all posible groups of frames to process.
-
-        Takes into consideration 
         
         Args:
             labels_path (str): Path to the labels.txt file
@@ -294,7 +309,7 @@ class DataProcessor:
         """
         logger.debug("Calculating people list from interval {} in file {}".format(interval, fle))
         if images_path is None:
-            PATH = Path(__file__).parents[1].joinpath("resources/{}".format(fle))
+            PATH = Path(__file__).parents[2].joinpath("resources/{}".format(fle))
         else:
             images_path = Path(images_path).joinpath("/{}".format(fle))
 

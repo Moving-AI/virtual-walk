@@ -5,11 +5,11 @@ from pathlib import Path
 
 import cv2
 
-from utils.controller import Controller
-from utils.dataprocessor import DataProcessor
-from utils.lstm_model import LSTMModel
-from utils.model import FullModel
-from utils.person_frames import PersonMovement
+from source.controller import Controller
+from source.dataprocessing import DataProcessor
+from source.nn_models.lstm_model import LSTMModel
+from source.nn_models.model import FullModel
+from source.entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -20,9 +20,39 @@ logger.setLevel(logging.INFO)
 
 
 class WebcamPredictor:
+    """The main class in the virtual walking project. When models have been trained, it loads all these models
+    and orchestrates everything. It controlls the acquisition of the frames from the webcam, the creation of the
+    frame groups, the Google Maps Controller and the output from the webcam. After it's initialised, predictor is its
+    main class.
+    
+    Returns:
+        WebcamPredictor: The predictor.
+    """
     def __init__(self, classes=["walk", "stand", "left", "right"], model='LSTM', pca_model_path=None,
                  nn_model_path=None, pose_model_path=None, scaler_model_path=None, output_video_dim=(640, 480),
                  coordinates=None, default_limit=None, driver_path=None, threshold_nn=0.5, time_rotation=0.5):
+        """WebcamPredictor class constructor.
+        
+        Args:
+            classes (list, optional): List of classes to be predicted. Defaults to ["walk", "stand", "left", "right"].
+            model (str, optional): Whether LSTM or NN model should be used. Defaults to 'LSTM'.
+            pca_model_path (str, optional): Used if model!='LSTM'. Path for the PCA model. If None, the model is
+            searched in the models folder.
+            nn_model_path (str, optional): Path for the NN model. If None, the model is searched
+            in the models folder. If LSTM it has to be the math of the LSTM model.
+            pose_model_path (str, optional): TFLite pose estimation model path. If None, the model is searched
+            in the models folder.
+            scaler_model_path (str, optional): Used if model!='LSTM'. Path for the scaler model. if None, the model
+            is searched in the models folder of the repository.
+            output_video_dim (tuple, optional): [description]. Defaults to (640, 480).
+            coordinates (tuple, optional): Coordinates for the initialization of the map. If None, the walk starts
+            in Zaragoza (Spain).
+            default_limit (float, optional): Time spacing between the same actions. If 0.5 (default) the system will walk
+            only once every 0.5 seconds.
+            driver_path (str, optional): Path for the Selenium Firefox Driver (Not needed if working in a Linux System)
+            threshold_nn (float, optional): Threshold for the NN output. if < treshold for every action, the system will 'stand'. Defaults to 0.5.
+            time_rotation (float, optional): Duration of a rotation when detected. Defaults to 0.5.
+        """
 
         self.n_frames = 5
         self.threshold_nn = threshold_nn
@@ -94,6 +124,20 @@ class WebcamPredictor:
         return font, color
 
     def predictor(self, output_dim=None, show_skeleton=False, times_v=1):
+        """The main method in this class. It processes the input form the webcam,
+        creating the groups of frames from which the action will be predicted.
+        The selection is based on whether each frame is suitable as a first frame
+        in the for the prediction.
+
+        When it finds a proper group of 5 frames, it processes it.
+        
+        Args:
+            output_dim (tuple, optional): The output dim of the webcam output. If None,
+            the original size of the video is taken.
+            show_skeleton (bool, optional): Whether skeleton should be shown in the image or not.
+            Defaults to False.
+            times_v (int, optional): Currently not used. Defaults to 1.
+        """
         probabilities = None
         network_frame_size = (257, 257)
         capture = cv2.VideoCapture(0)
@@ -167,7 +211,8 @@ class WebcamPredictor:
                 break
 
     def process_list(self, buffer, times_v):
-        person_movement = PersonMovement(buffer, times_v, model=self.model)
+        person_movement = PersonMovement(buffer, times_v, model = self.model)
+        logging.info("Shape {}".format(person_movement.coords.shape))
 
         prediction, probabilities = self.model.predict(person_movement.coords, self.threshold_nn)
         prediction = prediction[0]
@@ -179,14 +224,14 @@ class WebcamPredictor:
         return probabilities
 
     def process_list_lstm(self, buffer, *args):
-        '''
-        Processs a list of frames with LSTM.
+        """Processs a list of frames with LSTM.
+        
         Args:
-            buffer:
-
+            buffer (list): List of persons extracted from frames.
+        
         Returns:
-
-        '''
+            list: Probabilities for each action
+        """
         person_movement = PersonMovement(buffer, model='LSTM').coords
         prediction, probabilities = self.model_lstm.predict_NN(person_movement, self.threshold_nn)
         prediction = prediction[0]
@@ -198,6 +243,15 @@ class WebcamPredictor:
         return probabilities
 
     def _write_probabilities(self, frame, probabilities):
+        """Write probabilities for each class in the output frame
+        
+        Args:
+            frame (ndarray): Array containing the image
+            probabilities (list): List containing the probability for each action.
+        
+        Returns:
+            ndarray: Array containing the image with the new text.
+        """
         font = cv2.FONT_HERSHEY_PLAIN
         color = (131, 255, 51)
         for i, (p, c) in enumerate(zip(probabilities, self.classes)):
@@ -206,9 +260,21 @@ class WebcamPredictor:
         return frame
 
     def _write_distance(self, frame, distance):
+        """Writes and formats the distance walked in the output frame.
+        
+        Args:
+            frame ([ndarray): Array containing the image
+            distance (float): Distance made during the walk
+        
+        Returns:
+            ndarray: Array containing the image with the new text.
+        """
         font = cv2.FONT_HERSHEY_PLAIN
         color = (131, 255, 51)
         # pos = (10, 20 * (4 + 1) + 50)
         pos = (10, 400)
-        cv2.putText(frame, 'Distance: {:.3f}'.format(distance), pos, font, 1, color, 1)
+        if distance < 500:
+            cv2.putText(frame, 'Distance: {} m'.format(int(distance)), pos, font, 1, color, 1)
+        else:
+            cv2.putText(frame, 'Distance: {:.2f} km'.format(distance/1000), pos, font, 1, color, 1)
         return frame
