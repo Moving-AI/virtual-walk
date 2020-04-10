@@ -105,8 +105,8 @@ def imagen():
     return p
 
 def imagen_resnet():
-    output_stride = 16
-    img = cv2.imread('messi.png')
+    output_stride = 32
+    img = cv2.imread('resources/left_1/left_1_frame_29.jpg')
     ## PREPARE IMAGE
     img_width, img_height = img.shape[:2]
     target_width = (int(img_width) // output_stride) * output_stride + 1
@@ -114,7 +114,7 @@ def imagen_resnet():
     img2 = tf.reshape(tf.image.resize(img, (target_width, target_height)), [1, target_width, target_height, 3])
 
     ## FEED TO NETWORK
-    graph = load_model('models/resnet_stride16/model-stride16.json')
+    graph = load_model('models/resnet_stride32/model-stride32.json')
     input_tensor, output_tensor_names = get_tensors_graph(graph)
     sess = tf.compat.v1.Session(graph=graph)
     res = infer_model(img2.numpy(), sess, input_tensor, output_tensor_names)
@@ -122,7 +122,7 @@ def imagen_resnet():
     offsets = np.squeeze(res[2], 0)
     heatmaps = np.squeeze(res[3], 0)
 
-    p = Person(heatmaps, offsets, output_stride=16, threshold=0.5)
+    p = Person(heatmaps, offsets, output_stride=output_stride, threshold=0.5)
     p.draw_points(img)
     cv2.imshow("{}".format(p.confidence()), img)
     cv2.waitKey(0)

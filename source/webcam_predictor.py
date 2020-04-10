@@ -102,18 +102,20 @@ class WebcamPredictor:
         if pose_model_path is None:
             if backbone == 'resnet':
                 POSE_PATH = Path(__file__).parents[1].joinpath('models/resnet_stride{}/model-stride{}.json'.format(self.output_stride, self.output_stride))
-                rescale = (1,1)
+                input_dim = (256, 200)
+                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
             else:
                 POSE_PATH = Path(__file__).parents[1].joinpath('models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
                 rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
         else:
             POSE_PATH = pose_model_path
             if backbone == 'resnet':
-                rescale = (1,1)
+                input_dim = (256, 200)
+                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
             else:
                 rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
 
-        self.processor = DataProcessor(POSE_PATH, rescale=rescale, backbone=backbone)
+        self.processor = DataProcessor(POSE_PATH, rescale=rescale, backbone=backbone, output_stride=self.output_stride)
 
         if coordinates is not None:
             self.controller = Controller(self.classes, coordinates=coordinates, driver_path=driver_path,
@@ -168,7 +170,7 @@ class WebcamPredictor:
             # _, frame_orig = capture.read()
             # frame = cv2.resize(frame_orig, network_frame_size, interpolation=cv2.INTER_LINEAR)
             _, frame = capture.read()
-            person = self.processor.process_live_frame(frame, self.output_stride)
+            person = self.processor.process_live_frame(frame)
 
             if valid == 0 and person.is_valid_first():
                 # frame = cv2.resize(frame, output_dim[::-1], interpolation=cv2.INTER_LINEAR)

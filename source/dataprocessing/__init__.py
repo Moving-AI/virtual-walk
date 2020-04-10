@@ -33,7 +33,7 @@ class DataProcessor:
     """
 
     def __init__(self, model_path=None, input_dim=(257, 257), threshold=0.5, rescale=(1, 1), backbone='resnet',
-                 output_stride=16):
+                 output_stride=None):
         """Constructor for the DataProcessor class.
         
         Args:
@@ -53,7 +53,8 @@ class DataProcessor:
             MODEL_PATH = model_path
 
         if backbone == 'resnet':
-            dimensions = (480, 640)
+            assert output_stride is not None, 'A value for output_stride must be provided when using resnet as backbone'
+            dimensions = (256, 200)
             self.model, graph = funciones.load_model_resnet(str(MODEL_PATH))  # Actually a session.
             self.input_details, self.output_details = funciones.get_tensors_graph(graph)
             self.prepare_frame = funciones.prepare_frame_resnet
@@ -67,6 +68,7 @@ class DataProcessor:
 
         self.threshold = threshold
         self.rescale = rescale
+        self.output_stride = output_stride
 
     @staticmethod
     def process_video(filename, input_path=None, output_path=None, output_shape=(257, 257), fps_reduce=2, angle=0):
@@ -228,11 +230,11 @@ class DataProcessor:
                     if video not in coordinates_dict:
                         coordinates_dict[video] = []
                     persons = [element[1] for element in group]
-                    coordinates = PersonMovement(persons, times_v, joints_remove=(13, 14, 15, 16)).coords
+                    coordinates = PersonMovement(persons, times_v, joints_remove=(13, 14, 15, 16), model='NN').coords
                     coordinates_dict[video].append(coordinates)
         return coordinates_dict
 
-    def process_frame(self, image_path, output_stride):
+    def process_frame(self, image_path):
         """Receives a frame path and returns the person associated
         
         Args:
@@ -245,9 +247,9 @@ class DataProcessor:
         frame = cv2.imread(image_path)
         frame = self.prepare_frame(frame, self.input_dim)
         output_data, offset_data = self.get_model_output(self.model, frame, self.input_details, self.output_details)
-        return Person(output_data, offset_data, self.rescale, self.threshold, output_stride=output_stride)
+        return Person(output_data, offset_data, self.rescale, self.threshold, output_stride=self.output_stride)
 
-    def process_live_frame(self, frame, output_stride):
+    def process_live_frame(self, frame):
         """Receives a frame path and returns the person associated
         
         Args:
@@ -260,7 +262,7 @@ class DataProcessor:
 
         frame = self.prepare_frame(frame, self.input_dim)
         output_data, offset_data = self.get_model_output(self.model, frame, self.input_details, self.output_details)
-        return Person(output_data, offset_data, self.rescale, self.threshold, output_stride=output_stride)
+        return Person(output_data, offset_data, self.rescale, self.threshold, output_stride=self.output_stride)
 
     def get_frame_groups(self, actions, labels_path, n=5):
         """From a labels path, a list of actions and a number of frames per
