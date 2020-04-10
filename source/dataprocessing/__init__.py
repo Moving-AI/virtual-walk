@@ -180,6 +180,7 @@ class DataProcessor:
                 action = video.split("_")[0]
                 df["action"] = [action] * len(coordinates_dict[video])
                 df_list.append(df)
+        logger.info(df_list)
         cols_model_orig = [int(x) for x in list(df_list[-1].columns) if str(x).isnumeric()]
         cols_model_target = [str(x) for x in cols_model_orig if str(x).isnumeric()]
         mapper = {}
@@ -230,6 +231,7 @@ class DataProcessor:
                         coordinates_dict[video] = []
                     persons = [element[1] for element in group]
                     coordinates = PersonMovement(persons, times_v, joints_remove=(13, 14, 15, 16)).coords
+                    logger.info("Tamaño de las coordenadas: {}".format(coordinates.shape))
                     coordinates_dict[video].append(coordinates)
         return coordinates_dict
 
