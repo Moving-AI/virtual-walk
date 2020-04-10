@@ -181,6 +181,7 @@ class DataProcessor:
                 action = video.split("_")[0]
                 df["action"] = [action] * len(coordinates_dict[video])
                 df_list.append(df)
+        logger.info(df_list)
         cols_model_orig = [int(x) for x in list(df_list[-1].columns) if str(x).isnumeric()]
         cols_model_target = [str(x) for x in cols_model_orig if str(x).isnumeric()]
         mapper = {}
@@ -230,7 +231,11 @@ class DataProcessor:
                     if video not in coordinates_dict:
                         coordinates_dict[video] = []
                     persons = [element[1] for element in group]
-                    coordinates = PersonMovement(persons, times_v, joints_remove=(13, 14, 15, 16), model='NN').coords
+                    coordinates = PersonMovement(persons, times_v,
+                                                joints_remove=(13, 14, 15, 16),
+                                                model='NN').coords.flatten()
+
+                    logger.info("Tamaño de las coordenadas: {}".format(coordinates.shape))
                     coordinates_dict[video].append(coordinates)
         return coordinates_dict
 
@@ -325,7 +330,7 @@ class DataProcessor:
         else:
             images_path = Path(images_path).joinpath("/{}".format(fle))
 
-        return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i))] \
+        return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i), self.output_stride)] \
                 for i in range(interval[0], interval[1] + 1)]
 
     def valid_groups(self, lst, n):
