@@ -29,6 +29,9 @@ class LSTMModel:
     def _get_NN(self, input_dim, output_dim):
         inputs = Input(shape=(self.time_steps, input_dim))
         x = LSTM(32, return_sequences=False)(inputs)
+        x = Dense(25, activation='relu', kernel_initializer='he_normal', bias_initializer='he_normal',
+                  kernel_regularizer=tf.keras.regularizers.l2(0.01),
+                  activity_regularizer=tf.keras.regularizers.l2(0.01))(x)
         outputs = Dense(output_dim, activation='softmax')(x)
         model = Model(inputs=inputs, outputs=outputs)
         return model
@@ -93,7 +96,7 @@ class LSTMModel:
             opt = Adam(learning_rate=lr)
         else:
             raise ValueError('Not implemented compiler')
-        self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['categorical_accuracy'])
+        self.NN.compile(loss='categorical_crossentropy', optimizer=opt, metrics=[tf.keras.metrics.categorical_accuracy])
 
 
     @staticmethod

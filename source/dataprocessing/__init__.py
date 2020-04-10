@@ -54,7 +54,7 @@ class DataProcessor:
 
         if backbone == 'resnet':
             assert output_stride is not None, 'A value for output_stride must be provided when using resnet as backbone'
-            dimensions = (256, 200)
+            dimensions = (200, 256)
             self.model, graph = funciones.load_model_resnet(str(MODEL_PATH))  # Actually a session.
             self.input_details, self.output_details = funciones.get_tensors_graph(graph)
             self.prepare_frame = funciones.prepare_frame_resnet
