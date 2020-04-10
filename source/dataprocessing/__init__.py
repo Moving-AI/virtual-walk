@@ -67,6 +67,7 @@ class DataProcessor:
 
         self.threshold = threshold
         self.rescale = rescale
+        self.output_stride = output_stride
 
     @staticmethod
     def process_video(filename, input_path=None, output_path=None, output_shape=(257, 257), fps_reduce=2, angle=0):
@@ -323,7 +324,7 @@ class DataProcessor:
         else:
             images_path = Path(images_path).joinpath("/{}".format(fle))
 
-        return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i))] \
+        return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i), self.output_stride)] \
                 for i in range(interval[0], interval[1] + 1)]
 
     def valid_groups(self, lst, n):
