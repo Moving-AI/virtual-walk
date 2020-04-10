@@ -230,7 +230,10 @@ class DataProcessor:
                     if video not in coordinates_dict:
                         coordinates_dict[video] = []
                     persons = [element[1] for element in group]
-                    coordinates = PersonMovement(persons, times_v, joints_remove=(13, 14, 15, 16)).coords
+                    coordinates = PersonMovement(persons, times_v, 
+                                                joints_remove=(13, 14, 15, 16),
+                                                model='NN').coords.flatten()
+                    
                     logger.info("Tamaño de las coordenadas: {}".format(coordinates.shape))
                     coordinates_dict[video].append(coordinates)
         return coordinates_dict
