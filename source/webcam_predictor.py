@@ -7,16 +7,16 @@ import cv2
 
 from source.controller import Controller
 from source.dataprocessing import DataProcessor
+from source.entities.person_frames import PersonMovement
 from source.nn_models.lstm_model import LSTMModel
 from source.nn_models.model import FullModel
-from source.entities.person_frames import PersonMovement
 
 FORMAT = "%(asctime)s - %(levelname)s: %(message)s"
-logging.basicConfig(format=FORMAT)
+logging.basicConfig(format=FORMAT, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 formatter = logging.Formatter(FORMAT)
-logger.setLevel(logging.INFO)
+# logger.setLevel(logging.INFO)
 
 
 class WebcamPredictor:
@@ -30,7 +30,8 @@ class WebcamPredictor:
     """
     def __init__(self, classes=["walk", "stand", "left", "right"], model='LSTM', pca_model_path=None,
                  nn_model_path=None, pose_model_path=None, scaler_model_path=None, output_video_dim=(640, 480),
-                 coordinates=None, default_limit=None, driver_path=None, threshold_nn=0.5, time_rotation=0.5):
+                 coordinates=None, default_limit=None, driver_path=None, threshold_nn=0.5, time_rotation=0.5,
+                 backbone='resnet', output_stride=16):
         """WebcamPredictor class constructor.
         
         Args:
@@ -58,13 +59,15 @@ class WebcamPredictor:
         self.threshold_nn = threshold_nn
         self.classes = classes
         self.model = model
+        # self.backbone = backbone
+        self.output_stride = output_stride
         logging.info('Using {} model'.format(model))
 
         if self.model == 'LSTM':
             if nn_model_path is not None:
                 LSTM_PATH = Path(nn_model_path)
             else:
-                LSTM_PATH = Path(__file__).parents[1].joinpath("models/LSTM.h5")
+                LSTM_PATH = Path(__file__).parents[1].joinpath('models/LSTM.h5')
 
             self.model_lstm = LSTMModel(
                 classes,
@@ -76,17 +79,17 @@ class WebcamPredictor:
             if pca_model_path is not None:
                 PCA_PATH = Path(pca_model_path)
             else:
-                PCA_PATH = Path(__file__).parents[1].joinpath("models/PCA.pkl")
+                PCA_PATH = Path(__file__).parents[1].joinpath('models/PCA.pkl')
 
             if nn_model_path is not None:
                 NN_PATH = Path(nn_model_path)
             else:
-                NN_PATH = Path(__file__).parents[1].joinpath("models/NN.h5")
+                NN_PATH = Path(__file__).parents[1].joinpath('models/NN.h5')
 
             if scaler_model_path is not None:
                 SCALER_PATH = Path(scaler_model_path)
             else:
-                SCALER_PATH = Path(__file__).parents[1].joinpath("models/SCALER.pkl")
+                SCALER_PATH = Path(__file__).parents[1].joinpath('models/SCALER.pkl')
 
             self.model = FullModel(
                 classes=self.classes,
@@ -97,12 +100,22 @@ class WebcamPredictor:
             self.process_frames = self.process_list
 
         if pose_model_path is None:
-            POSE_PATH = Path(__file__).parents[1].joinpath(
-                "models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite")
+            if backbone == 'resnet':
+                POSE_PATH = Path(__file__).parents[1].joinpath('models/resnet_stride{}/model-stride{}.json'.format(self.output_stride, self.output_stride))
+                input_dim = (256, 200)
+                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
+            else:
+                POSE_PATH = Path(__file__).parents[1].joinpath('models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
+                rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
         else:
             POSE_PATH = pose_model_path
-        rescale = output_video_dim[0] / 257, output_video_dim[1] /257
-        self.processor = DataProcessor(POSE_PATH, rescale=rescale)
+            if backbone == 'resnet':
+                input_dim = (256, 200)
+                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
+            else:
+                rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
+
+        self.processor = DataProcessor(POSE_PATH, rescale=rescale, backbone=backbone, output_stride=self.output_stride)
 
         if coordinates is not None:
             self.controller = Controller(self.classes, coordinates=coordinates, driver_path=driver_path,
@@ -139,7 +152,6 @@ class WebcamPredictor:
             times_v (int, optional): Currently not used. Defaults to 1.
         """
         probabilities = None
-        network_frame_size = (257, 257)
         capture = cv2.VideoCapture(0)
         if output_dim is None:
             output_dim = (int(capture.get(4)), int(capture.get(3)))
@@ -147,19 +159,20 @@ class WebcamPredictor:
         buffer = []
         buffer_og = []  # For populating future buffers
         valid = 0
+        n_times = 0
+        times = []
         while True:
-            _, frame_orig = capture.read()
-            frame = cv2.resize(frame_orig, network_frame_size, interpolation=cv2.INTER_LINEAR)
-
+            # _, frame_orig = capture.read()
+            # frame = cv2.resize(frame_orig, network_frame_size, interpolation=cv2.INTER_LINEAR)
+            _, frame = capture.read()
             person = self.processor.process_live_frame(frame)
 
             if valid == 0 and person.is_valid_first():
-                frame = cv2.resize(frame, output_dim[::-1], interpolation=cv2.INTER_LINEAR)
+                # frame = cv2.resize(frame, output_dim[::-1], interpolation=cv2.INTER_LINEAR)
                 # cv2.imshow("WebCam", frame)
                 buffer.append(person)
                 buffer_og.append(person)
                 valid += 1
-
             elif 0 < valid < self.n_frames - 1 and person.is_valid_other():
                 # If valid as first, take into account for future frames
                 if person.is_valid_first():
@@ -181,7 +194,6 @@ class WebcamPredictor:
                 person.infer_lc_keypoints(buffer[valid - 1])
 
                 buffer.append(person)
-
                 probabilities = self.process_frames(buffer, times_v)
 
                 valid_startings = [i for i, person in enumerate(buffer_og) if person != False]
@@ -195,23 +207,23 @@ class WebcamPredictor:
                 buffer = [person]
                 buffer_og = [person]
                 valid = 1
-
             else:
                 buffer = []
                 valid = 0
 
             if show_skeleton and probabilities is not None:
-                person.draw_points(frame_orig)
-                self._write_probabilities(frame_orig, probabilities)
-                self._write_distance(frame_orig, self.controller.distance_calculator.distance)
-                cv2.imshow('frame', frame_orig)
-
+                person.draw_points(frame)
+                self._write_probabilities(frame, probabilities)
+                self._write_distance(frame, self.controller.distance_calculator.distance)
+                cv2.imshow('frame', frame)
+            logging.info("Ya llevamos {} ".format(n_times))
             # End of while
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+        return times
 
     def process_list(self, buffer, times_v):
-        person_movement = PersonMovement(buffer, times_v, model = "NN")
+        person_movement = PersonMovement(buffer, times_v, model = self.model)
         logging.info("Shape {}".format(person_movement.coords.shape))
 
         prediction, probabilities = self.model.predict(person_movement.coords, self.threshold_nn)
