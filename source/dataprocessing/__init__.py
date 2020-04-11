@@ -330,7 +330,7 @@ class DataProcessor:
         else:
             images_path = Path(images_path).joinpath("/{}".format(fle))
 
-        return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i), self.output_stride)] \
+        return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i))] \
                 for i in range(interval[0], interval[1] + 1)]
 
     def valid_groups(self, lst, n):
