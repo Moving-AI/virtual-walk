@@ -310,7 +310,6 @@ class DataProcessor:
         # Now we return all the persons in the interval. Valids will be filtered
         # Into consideration the position in the frame.
 
-        # persons_list = [element for element in persons_list if element[1].is_valid()]
         return persons_list
 
     def frame_interval_to_people_list(self, fle, interval, images_path=None):
@@ -328,7 +327,7 @@ class DataProcessor:
         if images_path is None:
             PATH = Path(__file__).parents[2].joinpath("resources/{}".format(fle))
         else:
-            images_path = Path(images_path).joinpath("/{}".format(fle))
+            PATH = Path(images_path).joinpath("/{}".format(fle))
 
         return [[i, self.process_frame(str(PATH) + "/{}_frame_{}.jpg".format(fle, i))] \
                 for i in range(interval[0], interval[1] + 1)]
@@ -344,11 +343,7 @@ class DataProcessor:
         valid, result, aux = 0, [], []
         if lst is not None:
             for index, i in enumerate(lst):
-
                 # if it's not the first frame --> Infer keypoints
-                # if valid > 0:
-                #    i[1].infer_lc_keypoints(lst[index-1][1])
-
                 # If is the first frame and the frame is valid
                 if valid == 0 and i[1].is_valid_first():
                     # New group
@@ -394,26 +389,11 @@ class DataProcessor:
         else:
             return None
 
-    # def expanded_groups(self,frame_interval, n):
-    #    """[summary]
-    #    
-    #    Args:
-    #        frame_interval (list): Iterval of valid frames
-    #        n (int): Sizew of the frame group
-    #    
-    #    Returns:
-    #        dict: for each video, the valid groups.
-    #    """
-    #    n_groups = (frame_interval[1]-frame_interval[0]+2)-n
-    #    
-    #    return [list(range(frame_interval[0]+i, frame_interval[0]+n+i)) for i in range(n_groups)]
-
     @staticmethod
     def find_actions(file):
         actions = set()
         regex = r"[a-z]+"
         for line in open(str(file)):
             for match in re.finditer(regex, line):
-                # print('Found on line {}: {}'.format(i+1, match.group()))
                 actions.add(match.group())
         return list(actions)

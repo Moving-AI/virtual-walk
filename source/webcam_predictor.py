@@ -156,17 +156,12 @@ class WebcamPredictor:
         if output_dim is None:
             output_dim = (int(capture.get(4)), int(capture.get(3)))
 
-        # if self.backbone == 'resnet':
-        #     network_frame_size = (int(output_dim) // self.output_stride) * self.output_stride + 1
-        # else:
-        #     network_frame_size = (257, 257)
-
         buffer = []
         buffer_og = []  # For populating future buffers
         valid = 0
         n_times = 0
         times = []
-        while n_times < 500:
+        while True:
             # _, frame_orig = capture.read()
             # frame = cv2.resize(frame_orig, network_frame_size, interpolation=cv2.INTER_LINEAR)
             _, frame = capture.read()
@@ -178,10 +173,6 @@ class WebcamPredictor:
                 buffer.append(person)
                 buffer_og.append(person)
                 valid += 1
-
-                n_times += 1
-                times.append(time.time())
-
             elif 0 < valid < self.n_frames - 1 and person.is_valid_other():
                 # If valid as first, take into account for future frames
                 if person.is_valid_first():
@@ -193,9 +184,6 @@ class WebcamPredictor:
 
                 buffer.append(person)
                 valid += 1
-
-                n_times += 1
-                times.append(time.time())
             elif valid == self.n_frames - 1 and person.is_valid_other():
                 # Here is the ONLY case in which we process a group of frames
                 # If frame was valid for first initially, take into account for future frames
@@ -206,7 +194,6 @@ class WebcamPredictor:
                 person.infer_lc_keypoints(buffer[valid - 1])
 
                 buffer.append(person)
-
                 probabilities = self.process_frames(buffer, times_v)
 
                 valid_startings = [i for i, person in enumerate(buffer_og) if person != False]
@@ -216,18 +203,10 @@ class WebcamPredictor:
                 else:
                     buffer = []
                     valid = 0
-                n_times += 1
-                times.append(time.time())
-
-
             elif person.is_valid_first():
                 buffer = [person]
                 buffer_og = [person]
                 valid = 1
-
-                n_times += 1
-                times.append(time.time())
-
             else:
                 buffer = []
                 valid = 0
