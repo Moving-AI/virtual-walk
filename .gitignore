@@ -3,9 +3,11 @@
 *.ipynb
 .ipynb_checkpoints
 data
-models/resnet_stride**
-models/google-chrome-stable_current_amd64.deb
-models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite
+models
+!models/LSTM.h5
+!models/NN.h5
+!models/PCA.h5
+!models/SCALER.h5
 *.txt
 utils/__pycache__
 resources/**
