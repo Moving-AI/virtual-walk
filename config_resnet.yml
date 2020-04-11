@@ -1,0 +1,19 @@
+
+backbone: resnet
+model: LSTM
+
+clases:
+  - walk
+  - stand
+  - left
+  - right
+
+output_video_dim:
+  - 640
+  - 480
+
+time_rotation: 0.5
+threshold_nn: 0.5
+
+posenet_stride: 16
+show_skeleton: None
