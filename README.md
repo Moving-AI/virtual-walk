@@ -1,8 +1,8 @@
 # Virtual walks in Google Street View
 
-During the quarantine we're currently in due to the COVID-19 pandemia our rights to move freely across the streets are trimmed in favour of the common wellbeing. People can only move in certain situations like doing the grocery. Most borders are closed and travelling is almosy totally banned in most countries.
+During the quarantine we're currently experiencing due to the COVID-19 pandemia our rights to move freely on the street are trimmed in favour of the common wellbeing. People can only go out in certain situations like doing the grocery. Many borders are closed and travelling is almosy totally banned in most countries.
 
-_Virtual Walks_ is a project that uses Pose Estimation models along with LSTM neural networks in order to simulate walks in Google Street View. For pose estimation, [PoseNet](https://www.tensorflow.org/lite/models/pose_estimation/overview) model has been adapted, while for the action detection part, a LSTM model has been created using [TensorFlow 2.0](https://www.tensorflow.org/).
+_Virtual Walks_ is a project that uses Pose Estimation models along with LSTM neural networks in order to simulate walks in Google Street View. For pose estimation, [PoseNet](https://www.tensorflow.org/lite/models/pose_estimation/overview) model has been adapted, while for the action detection part, an LSTM model has been developed using [TensorFlow 2.0](https://www.tensorflow.org/).
 
 This project is capable of simulating walking around the street all over the world with the help of [Google Street View](https://www.google.com/intl/es_ES/streetview/).
 
@@ -10,7 +10,7 @@ Tensorflow 2.0, Selenium and Python 3.7 are the main technologies used in this p
 
 ## How does it work
 
-PoseNet has been combined with a LSTM model to infer the action that is being made by the person. Once the action is detected it is pased to the controller; the part that interacts with Google Street View.
+PoseNet has been combined with an LSTM model to infer the action that the person is performing. Once the action is detected it is pased to the controller; the part that interacts with Google Street View.
 
 1. A Selenium Firefox window is opened.
 1. Using the webcam, the system takes photos of the person who will be making one of the four main actions used for walking:
@@ -27,7 +27,7 @@ PoseNet has been combined with a LSTM model to infer the action that is being ma
 
 Currently, there is another model that can be used to run this program. Instead of a LSTM, joint velocities are calculated across the frames in the 5-frame groups and passed along with the joint positions to a PCA and FF Neural Network to predict the action. The default model is the LSTM, as we consider it the methodologically correct one and is the model with the highest precission.
 
-As the action prediction could be (depending on the host computer's specifications) quite faster than the average walking speed, an action can be only executed once every 0.5 seconds.
+As the action prediction could be (depending on the host computer's specifications) much faster than the average walking speed, an action can be only executed once every 0.5 seconds. This parameter is customizable.
 
 ## Use case example
 
@@ -50,7 +50,9 @@ Install dependencies by running
 pip install requirements.txt
 ```
 
-Download the used models by running the [download_models](./download_models.py) file.
+Download the used models by running the [download_models](./download_models.py) file. This script will download PoseNet
+models (MobileNet and ResNet with both output strides, 16 and 32), LSTM, PCA, scaler and neural network. The link to
+download the models separately can be found below. 
 
 ```
 cd virtual-walk
@@ -71,9 +73,15 @@ Considerations during usage:
 
 To sum up, a position close to the one shown in the GIF should be used.
 
+#### Links to our models
+- [LSTM](https://drive.google.com/uc?export=download&id=1JydPMY58DVZr3qcZ3d7EPZWfq__yJH2Z)
+- [Scaler](https://drive.google.com/uc?export=download&id=1eQUYZB1ZTWRjXH4Y-gxs2wsgAK30iwgC)
+- [PCA](https://drive.google.com/uc?export=download&id=1cYMuGlfBdkbH6wd9x__1D07I64VA94wE)
+- [Feed-forward neural network](https://drive.google.com/uc?export=download&id=1dn51tNt96cWesufjCRtuQJQd2S3Ro6fu)
+
 ### Training
 
-Probably the training part is the weakest part in this project, due to our lack of training data and computing power. Our training data generation process consisted on 40 minutes of recordings. In each video, one person appeared making one specific action for a certain period of time. As it will be discussed in the next steps section, our models tend to overfit in spite of having a working system. An example of the training data can be seen below.
+Probably the training part is the weakest in this project, due to our lack of training data and computing power. Our training data generation process consisted on 40 minutes of recordings. In each video, one person appeared making one specific action for a certain period of time. As it will be discussed in the next steps section, our models tend to overfit in spite of having a working system. An example of the training data can be seen below.
 
 <img src="/readme_resources/Walking.gif" height="150"> 
 
