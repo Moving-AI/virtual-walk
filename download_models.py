@@ -1,68 +1,48 @@
-import json
 import os
-import posixpath
-import shutil
-import urllib.request
-import zlib
+from pathlib import Path
 
-'''
-EVERYTHING FROM https://github.com/atomicbits/posenet-python/blob/eef813ad16488812817b344afa1f390f0c22623d/posenet/converter/tfjsdownload.py
-'''
+import requests
 
-def fix_model_file(model_cfg):
-    model_file_path = os.path.join(model_cfg['tfjs_dir'], model_cfg['filename'])
+import source.funciones as f
 
-    if not model_cfg['filename'] == 'model.json':
-        # The expected filename for the model json file is 'model.json'.
-        # See tfjs_common.ARTIFACT_MODEL_JSON_FILE_NAME in the tensorflowjs codebase.
-        normalized_model_json_file = os.path.join(model_cfg['tfjs_dir'], 'model.json')
-        shutil.copyfile(model_file_path, normalized_model_json_file)
+if __name__ == '__main__':
+    output_folder = str(Path(__file__).parents[0].joinpath('models'))
+    try:
+        os.mkdir(output_folder)
+    except FileExistsError:
+        print('The directory is already created.')
 
-    with open(model_file_path, 'r') as f:
-        json_model_def = json.load(f)
+    models = {'LSTM.h5': '1JydPMY58DVZr3qcZ3d7EPZWfq__yJH2Z',
+              'PCA.pkl': '1cYMuGlfBdkbH6wd9x__1D07I64VA94wE',
+              'SCALER.pkl': '1eQUYZB1ZTWRjXH4Y-gxs2wsgAK30iwgC',
+              'NN.h5': '1dn51tNt96cWesufjCRtuQJQd2S3Ro6fu'}
+    mobilenet_model_name = 'posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite'
 
-    return json_model_def
-
-
-def download_single_file(base_url, filename, save_dir):
-    output_path = os.path.join(save_dir, filename)
-    url = posixpath.join(base_url, filename)
-    req = urllib.request.Request(url)
-    response = urllib.request.urlopen(req)
-    if response.info().get('Content-Encoding') == 'gzip':
-        data = zlib.decompress(response.read(), zlib.MAX_WBITS | 32)
-    else:
-        # this path not tested since gzip encoding default on google server
-        # may need additional encoding/text handling if hit in the future
-        data = response.read()
-    with open(output_path, 'wb') as f:
-        f.write(data)
+    print('Downloading MobileNet...', end='\n')
+    try:
+        mobilenet_destination = str(Path(__file__).parents[0].joinpath(output_folder + mobilenet_model_name))
+        session = requests.Session()
+        response = session.get('https://storage.googleapis.com/download.tensorflow.org/models/tflite/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite', stream=True)
+        f.save_response_content(response, mobilenet_destination)
+        print('MobileNet downloaded', end='\n')
+    except Exception as e:
+        print(f'Error ocurred while downloading MobileNet: {e}', end='\n')
 
 
-def download_tfjs_model(model_cfg):
-    """
-    Download a tfjs model with saved weights.
-    :param model_cfg: The model configuration
-    """
-    model_file_path = os.path.join(model_cfg['tfjs_dir'], model_cfg['filename'])
-    if os.path.exists(model_file_path):
-        print('Model file already exists: %s...' % model_file_path)
-        return
-    if not os.path.exists(model_cfg['tfjs_dir']):
-        os.makedirs(model_cfg['tfjs_dir'])
+    print('Downloading ResNet...', end='\n')
+    for stride in [16, 32]:
+        print('Stride ' + str(stride) + '...', end='\n')
+        model_cfg = {}
+        model_cfg['tfjs_dir'] = str(Path(__file__).parents[0].joinpath(output_folder + 'stride_' + str(stride)))
+        model_cfg['filename'] = 'model-stride'+ str(stride)+'.json'
+        model_cfg['base_url'] = 'https://storage.googleapis.com/tfjs-models/savedmodel/posenet/resnet50/float/'
+        try:
+            f.download_tfjs_model(model_cfg)
+            print('Stride ' + str(stride) + ' downloaded succesfully', end='\n')
+        except Exception as e:
+            print(f'Error ocurred while downloading ResNet: {e}', end='\n')
 
-    download_single_file(model_cfg['base_url'], model_cfg['filename'], model_cfg['tfjs_dir'])
-
-    json_model_def = fix_model_file(model_cfg)
-
-    shard_paths = json_model_def['weightsManifest'][0]['paths']
-    for shard in shard_paths:
-        download_single_file(model_cfg['base_url'], shard, model_cfg['tfjs_dir'])
-
-
-model_cfg = {}
-model_cfg['tfjs_dir'] = 'model/stride_32/'
-model_cfg['filename'] = 'model-stride32.json'
-model_cfg['base_url'] = 'https://storage.googleapis.com/tfjs-models/savedmodel/posenet/resnet50/float/'
-
-download_tfjs_model(model_cfg)
+    print('Downloading internal models')
+    for filename, file_id in models.items():
+        destination = str(Path(__file__).parents[0].joinpath(output_folder + filename))
+        f.download_file_from_google_drive(file_id, destination)

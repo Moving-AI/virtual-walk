@@ -1,10 +1,16 @@
 import argparse
+import json
 import logging
 import os
+import posixpath
 import re
+import shutil
+import urllib.request
+import zlib
 
 import cv2
 import numpy as np
+import requests
 import tensorflow as tf
 import tfjs_graph_converter as tfjs
 
@@ -132,3 +138,100 @@ def load_model_resnet(model_path):
     graph = tfjs.api.load_graph_model(model_path)
     sess = tf.compat.v1.Session(graph=graph)
     return sess, graph
+
+def fix_model_file(model_cfg):
+    '''
+    Function from https://github.com/atomicbits/posenet-python/blob/eef813ad16488812817b344afa1f390f0c22623d/posenet/converter/tfjsdownload.py
+    '''
+    model_file_path = os.path.join(model_cfg['tfjs_dir'], model_cfg['filename'])
+
+    if not model_cfg['filename'] == 'model.json':
+        # The expected filename for the model json file is 'model.json'.
+        # See tfjs_common.ARTIFACT_MODEL_JSON_FILE_NAME in the tensorflowjs codebase.
+        normalized_model_json_file = os.path.join(model_cfg['tfjs_dir'], 'model.json')
+        shutil.copyfile(model_file_path, normalized_model_json_file)
+
+    with open(model_file_path, 'r') as f:
+        json_model_def = json.load(f)
+
+    return json_model_def
+
+
+def download_single_file(base_url, filename, save_dir):
+    '''
+    Function from https://github.com/atomicbits/posenet-python/blob/eef813ad16488812817b344afa1f390f0c22623d/posenet/converter/tfjsdownload.py
+    '''
+    output_path = os.path.join(save_dir, filename)
+    url = posixpath.join(base_url, filename)
+    req = urllib.request.Request(url)
+    response = urllib.request.urlopen(req)
+    if response.info().get('Content-Encoding') == 'gzip':
+        data = zlib.decompress(response.read(), zlib.MAX_WBITS | 32)
+    else:
+        # this path not tested since gzip encoding default on google server
+        # may need additional encoding/text handling if hit in the future
+        data = response.read()
+    with open(output_path, 'wb') as f:
+        f.write(data)
+
+
+def download_tfjs_model(model_cfg):
+    """
+    Function from https://github.com/atomicbits/posenet-python/blob/eef813ad16488812817b344afa1f390f0c22623d/posenet/converter/tfjsdownload.py
+    Download a tfjs model with saved weights.
+    :param model_cfg: The model configuration
+    """
+    model_file_path = os.path.join(model_cfg['tfjs_dir'], model_cfg['filename'])
+    if os.path.exists(model_file_path):
+        print('Model file already exists: %s...' % model_file_path)
+        return
+    if not os.path.exists(model_cfg['tfjs_dir']):
+        os.makedirs(model_cfg['tfjs_dir'])
+
+    download_single_file(model_cfg['base_url'], model_cfg['filename'], model_cfg['tfjs_dir'])
+
+    json_model_def = fix_model_file(model_cfg)
+
+    shard_paths = json_model_def['weightsManifest'][0]['paths']
+    for shard in shard_paths:
+        download_single_file(model_cfg['base_url'], shard, model_cfg['tfjs_dir'])
+
+def download_file_from_google_drive(id, destination):
+    '''
+    Taken from the following StackOverflow answer: https://stackoverflow.com/a/39225039
+    '''
+    URL = "https://drive.google.com/uc?export=download"
+
+    session = requests.Session()
+
+    response = session.get(URL, params={'id': id}, stream=True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = {'id': id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+
+    save_response_content(response, destination)
+
+
+def get_confirm_token(response):
+    '''
+    Taken from the following StackOverflow answer: https://stackoverflow.com/a/39225039
+    '''
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            return value
+
+    return None
+
+
+def save_response_content(response, destination):
+    '''
+    Taken from the following StackOverflow answer: https://stackoverflow.com/a/39225039
+    '''
+    CHUNK_SIZE = 32768
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
