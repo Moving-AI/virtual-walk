@@ -73,7 +73,9 @@ To sum up, a position close to the one shown in the GIF should be used.
 
 ### Training
 
-Probably the training part is the weakest part in this project, due to our lack of training data and computing power. Our training data generation process consisted on 40 minutes of recordings. In each video, one person appeared making one specific action for a certain period of time. As it will be discussed in the next steps section, our models tend to overfit in spite of having a working system.
+Probably the training part is the weakest part in this project, due to our lack of training data and computing power. Our training data generation process consisted on 40 minutes of recordings. In each video, one person appeared making one specific action for a certain period of time. As it will be discussed in the next steps section, our models tend to overfit in spite of having a working system. An example of the training data can be seen below.
+
+![Example walk in Paris](./readme_resources/Walking.gif)
 
 The models we have trained and the ones from which the examples have been generated can be downloaded running the [download_models](./download_models.py) file. In the images below the training performance is shown:
 
@@ -87,7 +89,10 @@ If someone wants to train another LSTM model, the [DataProcessor](./source/datap
 
 ## Next steps
 
-TODO
+- Generating more training data. In this project we have tried to get what could be considered a MVP, robustness has never been a main goal. As it can be seen in the Training section, the model does not appear to overfit, even knowing that LSTM tend very much to overfit. However, the training and testing data are very similar, as the videos are people making "loop" actions. So we expect the model to have underlying overfitting that cannot be detected witout more videos. Probably, recording more videos in different light conditions would make the model more robust and consistent.
+
+- Turning to the right and to the left are not predicted with the same accuracy in spite of being symmetric actions. A specular reflection of the coordinates could be used to be more consistent in the turn predictions.
+
 
 ## Authors
 
