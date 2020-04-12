@@ -67,7 +67,7 @@ This project is under MIT license. See [LICENSE](LICENSE) for more details.
 
 ## Acknowledgments
 
-- @(atomicbits)[https://github.com/atomicbits] for the (repo)[https://github.com/atomicbits/posenet-python/] with the tools used in order to download the TFJS models of PoseNet to be used in TensorFlow.
-- @(tensorflow)[https://github.com/tensorflow/] for (Posenet)[https://github.com/tensorflow/tfjs-models/tree/master/posenet] models.
-- @(patlevin)[https://github.com/patlevin/tfjs-to-tf] for the tools used for creating a session in Python from the graph files.
-- @(ajaichemmanam)[https://github.com/ajaichemmanam/simple_posenet_python] for the help provided when struggling with opening graph files with Python.
+- [@atomicbits](https://github.com/atomicbits) for the [repo](https://github.com/atomicbits/posenet-python/) with the tools used in order to download the TFJS models of PoseNet to be used in TensorFlow.
+- [@tensorflow](https://github.com/tensorflow/) for [Posenet](https://github.com/tensorflow/tfjs-models/tree/master/posenet) models.
+- [@patlevin](https://github.com/patlevin/tfjs-to-tf) for the tools used for creating a session in Python from the graph files.
+- [@ajaichemmanam](https://github.com/ajaichemmanam/simple_posenet_python) for the help provided when struggling with opening graph files with Python.
