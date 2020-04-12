@@ -8,10 +8,6 @@ This project is capable of simulating walking around the street all over the wor
 
 Tensorflow 2.0, Selenium and Python 3.7 are the main technologies used in this project.
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/TensorFlowLogo.svg/1200px-TensorFlowLogo.svg.png" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/TensorFlowLogo.svg/1200px-TensorFlowLogo.svg.png" height="200" hspace="20" />  |  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Google_Street_View_icon.svg/1200px-Google_Street_View_icon.svg.png" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Google_Street_View_icon.svg/1200px-Google_Street_View_icon.svg.png" height="150" hspace="50" />
--------------------------|-------------------------
-
-
 ## How does it work
 
 PoseNet has been combined with a LSTM model to infer the action that is being made by the person. Once the action is detected it is pased to the controller; the part that interacts with Google Street View.
@@ -39,15 +35,53 @@ As it can be seen in the image, the skeleton is inferred form the image and an a
 
 ![Example walk in Paris](./readme_resources/Paris.gif)
 
-## Installation
+## Installation and use
+Remember that a Webcam is needed to use this program, as actions are predicted from the frames taken with it.
 
-TODO
+Clone the git repository
+
+```
+git clone https://github.com/Moving-AI/virtual-walk.git
+```
+
+Install dependencies by running
+
+```
+pip install requirements.txt
+```
+
+Download the used models by running the [download_models](./download_models.py) file.
+
+```
+cd virtual-walk
+python3 download_models.py
+```
+
+Finally, you can run [execute.py](./execute.py) to try it.
+
+```
+python3 execute.py
+```
+
+Considerations during usage: 
+
+- Our experience using the model tells us that a slightly bright enviroment is preferred rather than a very bright one.
+
+- The system is sensitive to the position of the webcam.
+
+To sum up, a position close to the one shown in the GIF should be used.
 
 ### Training
 
 Probably the training part is the weakest part in this project, due to our lack of training data and computing power. Our training data generation process consisted on 40 minutes of recordings. In each video, one person appeared making one specific action for a certain period of time. As it will be discussed in the next steps section, our models tend to overfit in spite of having a working system.
 
-The models we have trained and the ones from which the examples have been generated can be downloaded running the [download_models](./download_models.py) file.
+The models we have trained and the ones from which the examples have been generated can be downloaded running the [download_models](./download_models.py) file. In the images below the training performance is shown:
+
+
+<img src="./readme_resources/epoch_categorical_accuracy.svg" height="200" hspace="20" />  |  <img src="./readme_resources/epoch_loss.svg" height="150" hspace="50" />
+-------------------------|------------------------
+
+
 
 If someone wants to train another LSTM model, the [DataProcessor](./source/dataprocessing/__init__.py) class is provided. It can process the videos located in a folder, reading the valid frame numbers from a labels.txt file and generating a CSV file with the training examples. This file can be used in (train.py)[./train.py] to generate a new LSTM model. The path for this model would be passed to the (WebcamPredictor)[./source/webcam_predictor.py] class and the system would use this new model.
 
