@@ -43,6 +43,7 @@ class DataProcessor:
             threshold (float, optional): Confidence threshold for considering a body joint valid. Defaults to 0.5.
             rescale (tuple, optional): Rescaling factor in the output. Defaults to (1,1).
         """
+        self.read_config()
         if model_path is None:
             if backbone == 'resnet':
                 MODEL_PATH = Path(__file__).parents[2].joinpath('models/resnet_stride16/model-stride16.json')
@@ -69,6 +70,13 @@ class DataProcessor:
         self.threshold = threshold
         self.rescale = rescale
         self.output_stride = output_stride
+    def read_config(self, yaml_path=False):
+        if not yaml_path:
+            yaml_path = Path(__file__).parents[2].joinpath("config_resnet.yml")
+        with open(yaml_path) as file:
+            self.config = yaml.full_load(file)
+
+
 
     @staticmethod
     def process_video(filename, input_path=None, output_path=None, output_shape=(257, 257), fps_reduce=2, angle=0):
