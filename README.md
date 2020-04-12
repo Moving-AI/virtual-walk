@@ -12,7 +12,8 @@ We use [TFLite Pose Estimation model](https://www.tensorflow.org/lite/models/pos
 With this tools, it is possible to walk around the street while pretending to walk, at home.
 
 ## Examples
-TODO
+
+![Example walk in Paris](./readme_resources/Paris.gif)
 
 ## Installation
 TODO
