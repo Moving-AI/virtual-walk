@@ -63,6 +63,3 @@ This project is under MIT license. See [LICENSE](LICENSE) for more details.
 
 ## Acknowledgments
 
-* [zzh8829](https://github.com/zzh8829/yolov3-tf2) for YOLO's code
-* [Tensorflow](https://www.tensorflow.org/) for Pix2Pix' code
-
