@@ -6,7 +6,7 @@ import requests
 import source.funciones as f
 
 if __name__ == '__main__':
-    output_folder = str(Path(__file__).parents[0].joinpath('models'))
+    output_folder = str(Path(__file__).parents[0].joinpath('models/'))
     try:
         os.mkdir(output_folder)
     except FileExistsError:
