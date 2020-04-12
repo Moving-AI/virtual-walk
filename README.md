@@ -2,9 +2,9 @@
 
 During the quarantine we're currently in due to the COVID-19 pandemia our rights to move freely across the streets are trimmed in favour of the common wellbeing. People can only move in certain situations like doing the grocery. Most borders are closed and travelling is almosy totally banned in most countries.
 
-_Virtual Walks_ is a project that uses Pose Estimation models along with LSTM neural networks in order to simulate walks in Google Street View. For pose estimation, [PoseNet](https://www.tensorflow.org/lite/models/pose_estimation/overview) model has been adapted, while for the action detection part, a LSTM model has been created using (TensorFlow 2.0)[https://www.tensorflow.org/].
+_Virtual Walks_ is a project that uses Pose Estimation models along with LSTM neural networks in order to simulate walks in Google Street View. For pose estimation, [PoseNet](https://www.tensorflow.org/lite/models/pose_estimation/overview) model has been adapted, while for the action detection part, a LSTM model has been created using [TensorFlow 2.0](https://www.tensorflow.org/).
 
-This project is capable of simulating walking around the street all over the world with the help of (Google Street View)[https://www.google.com/intl/es_ES/streetview/].
+This project is capable of simulating walking around the street all over the world with the help of [Google Street View](https://www.google.com/intl/es_ES/streetview/).
 
 Tensorflow 2.0, Selenium and Python 3.7 are the main technologies used in this project.
 
@@ -49,7 +49,7 @@ Probably the training part is the weakest part in this project, due to our lack 
 
 The models we have trained and the ones from which the examples have been generated can be downloaded running the [download_models](./download_models.py) file.
 
-If someone wants to train another LSTM model, the (DataProcessor)[./source/dataprocessing/__init__.py] class is provided. It can process the videos located in a folder, reading the valid frame numbers from a labels.txt file and generating a CSV file with the training examples. This file can be used in (train.py)[./train.py] to generate a new LSTM model. The path for this model would be passed to the (WebcamPredictor)[./source/webcam_predictor.py] class and the system would use this new model.
+If someone wants to train another LSTM model, the [DataProcessor](./source/dataprocessing/__init__.py) class is provided. It can process the videos located in a folder, reading the valid frame numbers from a labels.txt file and generating a CSV file with the training examples. This file can be used in (train.py)[./train.py] to generate a new LSTM model. The path for this model would be passed to the (WebcamPredictor)[./source/webcam_predictor.py] class and the system would use this new model.
 
 ## Next steps
 
