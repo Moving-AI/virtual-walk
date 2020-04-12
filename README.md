@@ -45,7 +45,11 @@ TODO
 
 ### Training
 
-TODO
+Probably the training part is the weakest part in this project, due to our lack of training data and computing power. Our training data generation process consisted on 40 minutes of recordings. In each video, one person appeared making one specific action for a certain period of time. As it will be discussed in the next steps section, our models tend to overfit in spite of having a working system.
+
+The models we have trained and the ones from which the examples have been generated can be downloaded running the [download_models](./download_models.py) file.
+
+If someone wants to train another LSTM model, the (DataProcessor)[./source/dataprocessing/__init__.py] class is provided. It can process the videos located in a folder, reading the valid frame numbers from a labels.txt file and generating a CSV file with the training examples. This file can be used in (train.py)[./train.py] to generate a new LSTM model. The path for this model would be passed to the (WebcamPredictor)[./source/webcam_predictor.py] class and the system would use this new model.
 
 ## Next steps
 
@@ -63,3 +67,7 @@ This project is under MIT license. See [LICENSE](LICENSE) for more details.
 
 ## Acknowledgments
 
+- (@atomicbits)[https://github.com/atomicbits] for the (repo)[https://github.com/atomicbits/posenet-python/] with the tools used in order to download the TFJS models of PoseNet to be used in TensorFlow.
+- (@tensorflow)[https://github.com/tensorflow/] for (Posenet)[https://github.com/tensorflow/tfjs-models/tree/master/posenet] models.
+- (@patlevin)[https://github.com/patlevin/tfjs-to-tf] for the tools used for creating a session in Python from the graph files.
+- (@ajaichemmanam)[https://github.com/ajaichemmanam/simple_posenet_python] for the help provided when struggling with opening graph files with Python.
