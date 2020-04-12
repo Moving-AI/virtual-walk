@@ -75,9 +75,10 @@ To sum up, a position close to the one shown in the GIF should be used.
 
 Probably the training part is the weakest part in this project, due to our lack of training data and computing power. Our training data generation process consisted on 40 minutes of recordings. In each video, one person appeared making one specific action for a certain period of time. As it will be discussed in the next steps section, our models tend to overfit in spite of having a working system. An example of the training data can be seen below.
 
-![Example walk in Paris](./readme_resources/Walking.gif)
+<img src="/readme_resources/Walking.gif" height="150"> 
 
 The models we have trained and the ones from which the examples have been generated can be downloaded running the [download_models](./download_models.py) file. In the images below the training performance is shown:
+
 
 
 <img src="./readme_resources/epoch_categorical_accuracy.svg" height="200" hspace="20" />  |  <img src="./readme_resources/epoch_loss.svg" height="150" hspace="50" />
