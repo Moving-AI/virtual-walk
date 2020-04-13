@@ -2,9 +2,9 @@ import logging
 import time
 from copy import deepcopy
 from pathlib import Path
-import yaml
 
 import cv2
+import yaml
 
 from source.controller import Controller
 from source.dataprocessing import DataProcessor
@@ -46,6 +46,7 @@ class WebcamPredictor:
             config = yaml.full_load(file)
  
         self.classes = config["classes"]
+        self.show_skeleton = config['show_skeleton']
         self.n_frames = 5
         self.threshold_nn = config["threshold_nn"]
         output_video_dim = config["output_video_dim"]
@@ -129,7 +130,7 @@ class WebcamPredictor:
         color = (131, 255, 51)
         return font, color
 
-    def predictor(self, output_dim=None, show_skeleton=False, times_v=1):
+    def predictor(self, output_dim=None, times_v=1):
         """The main method in this class. It processes the input form the webcam,
         creating the groups of frames from which the action will be predicted.
         The selection is based on whether each frame is suitable as a first frame
@@ -140,8 +141,6 @@ class WebcamPredictor:
         Args:
             output_dim (tuple, optional): The output dim of the webcam output. If None,
             the original size of the video is taken.
-            show_skeleton (bool, optional): Whether skeleton should be shown in the image or not.
-            Defaults to False.
             times_v (int, optional): Currently not used. Defaults to 1.
         """
         probabilities = None
@@ -202,7 +201,7 @@ class WebcamPredictor:
                 buffer = []
                 valid = 0
 
-            if show_skeleton and probabilities is not None:
+            if self.show_skeleton and probabilities is not None:
                 person.draw_points(frame)
                 self._write_probabilities(frame, probabilities)
                 self._write_distance(frame, self.controller.distance_calculator.distance)
