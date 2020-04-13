@@ -1,5 +1,7 @@
 # Paseos virtuales en Google Street View
 
+_For the english version, [click here](README.md)._
+
 Durante la cuarentena que estamos pasando debido a la pandemia del COVID-19 nuestro derecho a caminar libremente por la
 calle se ha visto mermado en pos del bien común. Muchas fronteras están cerradas y viajar está casi totalmente prohibido
 en la mayoría de países.
