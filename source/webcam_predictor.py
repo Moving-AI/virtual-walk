@@ -2,6 +2,7 @@ import logging
 import time
 from copy import deepcopy
 from pathlib import Path
+import yaml
 
 import cv2
 
@@ -28,66 +29,60 @@ class WebcamPredictor:
     Returns:
         WebcamPredictor: The predictor.
     """
-    def __init__(self, classes=["walk", "stand", "left", "right"], model='LSTM', pca_model_path=None,
-                 nn_model_path=None, pose_model_path=None, scaler_model_path=None, output_video_dim=(640, 480),
-                 coordinates=None, default_limit=None, driver_path=None, threshold_nn=0.5, time_rotation=0.5,
-                 backbone='resnet', output_stride=16):
+    def __init__(self, config_path=None, coordinates=None):
         """WebcamPredictor class constructor.
         
         Args:
-            classes (list, optional): List of classes to be predicted. Defaults to ["walk", "stand", "left", "right"].
-            model (str, optional): Whether LSTM or NN model should be used. Defaults to 'LSTM'.
-            pca_model_path (str, optional): Used if model!='LSTM'. Path for the PCA model. If None, the model is
-            searched in the models folder.
-            nn_model_path (str, optional): Path for the NN model. If None, the model is searched
-            in the models folder. If LSTM it has to be the math of the LSTM model.
-            pose_model_path (str, optional): TFLite pose estimation model path. If None, the model is searched
-            in the models folder.
-            scaler_model_path (str, optional): Used if model!='LSTM'. Path for the scaler model. if None, the model
-            is searched in the models folder of the repository.
-            output_video_dim (tuple, optional): [description]. Defaults to (640, 480).
+            config_path (str, optional): Path of the config.yaml file. If none, ./config_resnet.yml is used.
             coordinates (tuple, optional): Coordinates for the initialization of the map. If None, the walk starts
-            in Zaragoza (Spain).
-            default_limit (float, optional): Time spacing between the same actions. If 0.5 (default) the system will walk
-            only once every 0.5 seconds.
-            driver_path (str, optional): Path for the Selenium Firefox Driver (Not needed if working in a Linux System)
-            threshold_nn (float, optional): Threshold for the NN output. if < treshold for every action, the system will 'stand'. Defaults to 0.5.
-            time_rotation (float, optional): Duration of a rotation when detected. Defaults to 0.5.
+            Zaragoza (Spain).
         """
+        if config_path == None:
+            config_path = Path(__file__).parents[1].joinpath("config_resnet.yml")
+        else:
+            config_path = Path(config_path)
 
+        with open(str(config_path)) as file:
+            config = yaml.full_load(file)
+ 
+        self.classes = config["classes"]
         self.n_frames = 5
-        self.threshold_nn = threshold_nn
-        self.classes = classes
-        self.model = model
+        self.threshold_nn = config["threshold_nn"]
+        output_video_dim = config["output_video_dim"]
+        default_limit = config["default_limit"]
+        driver_path = config.get("driver_path", None)
+        
+        self.model = config["model"]
+        self.backbone = config["backbone"]
         # self.backbone = backbone
-        self.output_stride = output_stride
-        logging.info('Using {} model'.format(model))
+        self.output_stride = config["posenet_stride"]
+        logging.info('Using {} model'.format(self.model))
 
         if self.model == 'LSTM':
-            if nn_model_path is not None:
-                LSTM_PATH = Path(nn_model_path)
+            if config["paths"].get("LSTM", False):
+                LSTM_PATH = Path(config["paths"].get("LSTM"))
             else:
                 LSTM_PATH = Path(__file__).parents[1].joinpath('models/LSTM.h5')
 
             self.model_lstm = LSTMModel(
-                classes,
+                self.classes,
                 input_dim=28,
                 load_path_NN=str(LSTM_PATH)
             )
             self.process_frames = self.process_list_lstm
         else:
-            if pca_model_path is not None:
-                PCA_PATH = Path(pca_model_path)
+            if config["paths"].get("PCA", False):
+                PCA_PATH = Path(config["paths"].get("PCA"))
             else:
                 PCA_PATH = Path(__file__).parents[1].joinpath('models/PCA.pkl')
 
-            if nn_model_path is not None:
-                NN_PATH = Path(nn_model_path)
+            if config["paths"].get("NN", False):
+                NN_PATH = Path(config["paths"].get("NN"))
             else:
                 NN_PATH = Path(__file__).parents[1].joinpath('models/NN.h5')
 
-            if scaler_model_path is not None:
-                SCALER_PATH = Path(scaler_model_path)
+            if config["paths"].get("SCALER", False):
+                SCALER_PATH = Path(config["paths"].get("SCALER"))
             else:
                 SCALER_PATH = Path(__file__).parents[1].joinpath('models/SCALER.pkl')
 
@@ -99,32 +94,30 @@ class WebcamPredictor:
             )
             self.process_frames = self.process_list
 
-        if pose_model_path is None:
-            if backbone == 'resnet':
+        if config["paths"].get("posenet", False):
+            
+            POSE_PATH = config["paths"].get("posenet", False)
+            if self.backbone == 'resnet':
+                input_dim = (256, 200)
+                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
+            else:
+                rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
+        else:
+            if self.backbone == 'resnet':
                 POSE_PATH = Path(__file__).parents[1].joinpath('models/resnet_stride{}/model-stride{}.json'.format(self.output_stride, self.output_stride))
                 input_dim = (256, 200)
                 rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
             else:
                 POSE_PATH = Path(__file__).parents[1].joinpath('models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
                 rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
-        else:
-            POSE_PATH = pose_model_path
-            if backbone == 'resnet':
-                input_dim = (256, 200)
-                rescale = output_video_dim[0] / input_dim[0], output_video_dim[1] / input_dim[1]
-            else:
-                rescale = output_video_dim[0] / 257, output_video_dim[1] / 257
 
-        self.processor = DataProcessor(POSE_PATH, rescale=rescale, backbone=backbone, output_stride=self.output_stride)
+        self.processor = DataProcessor(POSE_PATH, rescale=rescale, backbone=self.backbone, output_stride=self.output_stride)
 
         if coordinates is not None:
             self.controller = Controller(self.classes, coordinates=coordinates, driver_path=driver_path,
-                                         time_rotation=time_rotation)
+                                         time_rotation=config["time_rotation"])
         else:
-            self.controller = Controller(self.classes, time_rotation=time_rotation)
-
-        if default_limit is None:
-            default_limit = 0.5
+            self.controller = Controller(self.classes, time_rotation=config["time_rotation"])
 
         initial_time = time.time()
         self.last_calls = {element: [initial_time, default_limit] for element in self.classes}
@@ -216,7 +209,7 @@ class WebcamPredictor:
                 self._write_probabilities(frame, probabilities)
                 self._write_distance(frame, self.controller.distance_calculator.distance)
                 cv2.imshow('frame', frame)
-            logging.info("Ya llevamos {} ".format(n_times))
+            logging.debug("Already {} ".format(n_times))
             # End of while
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

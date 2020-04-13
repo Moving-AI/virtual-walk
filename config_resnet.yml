@@ -1,24 +1,42 @@
-
+# Posenet variation to be used for pose estimation
 backbone: resnet
+
+# Classification model
 model: LSTM
 
-clases:
+
+classes:
   - walk
   - stand
   - left
   - right
 
+#Dimension of the video output
 output_video_dim:
   - 640
   - 480
 
 
+# Duration in seconds of each turn
 time_rotation: 0.5
-threshold_nn: 0.5
 
+# Minimum time interval for an action to be repeated
+default_limit: 0.5
+
+# Minimum Classifier output for action != stand
+threshold_nn: 0
+
+# Posenet model stride
 posenet_stride: 16
+
+# Show skeleton in the output shown
 show_skeleton: True
 
+
 paths:
-  ResNet: False
+  posenet: False
   LSTM: False
+  #If LSTM is not used, this paths are used
+  PCA: False
+  NN: False
+  SCALER: False
