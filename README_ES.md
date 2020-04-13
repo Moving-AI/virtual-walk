@@ -106,8 +106,8 @@ En las imágenes se muestra el proceso de entrenamiento:
 
 Para entrenar otro modelo LSTM, el repositorio cuenta con la clase [DataProcessor](./source/dataprocessing/__init__.py).
 Puede procesar los vídeos localizados en una carpeta, leyendo los frames válidos de un archivo labels.txt y generando un 
-CSV con los datos de entrenamiento. Este archivo puede ser utilizado en (train.py)[./train.py] para generar un nuevo modelo
-LSTM. La localización de este modelo se pasaría a la clase (WebcamPredictor)[./source/webcam_predictor.py] y el sistema 
+CSV con los datos de entrenamiento. Este archivo puede ser utilizado en [train.py](./train.py) para generar un nuevo modelo
+LSTM. La localización de este modelo se pasaría a la clase [WebcamPredictor](./source/webcam_predictor.py) y el sistema 
 localizaría este nuevo modelo.
 
 ## Próximos pasos

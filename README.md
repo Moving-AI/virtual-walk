@@ -96,7 +96,7 @@ The models we have trained and the ones from which the examples have been genera
 
 
 
-If someone wants to train another LSTM model, the [DataProcessor](./source/dataprocessing/__init__.py) class is provided. It can process the videos located in a folder, reading the valid frame numbers from a labels.txt file and generating a CSV file with the training examples. This file can be used in (train.py)[./train.py] to generate a new LSTM model. The path for this model would be passed to the (WebcamPredictor)[./source/webcam_predictor.py] class and the system would use this new model.
+If someone wants to train another LSTM model, the [DataProcessor](./source/dataprocessing/__init__.py) class is provided. It can process the videos located in a folder, reading the valid frame numbers from a labels.txt file and generating a CSV file with the training examples. This file can be used in [train.py](./train.py) to generate a new LSTM model. The path for this model would be passed to the [WebcamPredictor](./source/webcam_predictor.py) class and the system would use this new model.
 
 ## Next steps
 
