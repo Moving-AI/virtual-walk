@@ -4,10 +4,6 @@
 .ipynb_checkpoints
 data
 models
-!models/LSTM.h5
-!models/NN.h5
-!models/PCA.h5
-!models/SCALER.h5
 *.txt
 utils/__pycache__
 resources/**
@@ -21,3 +17,4 @@ logs
 __pycache__
 !requirements.txt
 __pycache__
+Vídeo/

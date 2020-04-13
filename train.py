@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 
-from utils.model import FullModel
+from source.nn_models.model import FullModel
 
 config = ConfigProto()
 config.gpu_options.allow_growth = True

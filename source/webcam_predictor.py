@@ -152,8 +152,6 @@ class WebcamPredictor:
         buffer = []
         buffer_og = []  # For populating future buffers
         valid = 0
-        n_times = 0
-        times = []
         while True:
             # _, frame_orig = capture.read()
             # frame = cv2.resize(frame_orig, network_frame_size, interpolation=cv2.INTER_LINEAR)
@@ -209,11 +207,10 @@ class WebcamPredictor:
                 self._write_probabilities(frame, probabilities)
                 self._write_distance(frame, self.controller.distance_calculator.distance)
                 cv2.imshow('frame', frame)
-            logging.debug("Already {} ".format(n_times))
+
             # End of while
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        return times
 
     def process_list(self, buffer, times_v):
         person_movement = PersonMovement(buffer, times_v, model = self.model)
