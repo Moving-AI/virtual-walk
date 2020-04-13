@@ -48,7 +48,7 @@ Como se puede observar en la imagen, el esqueleto se infiere de la imagen y la a
 ![Example walk in Paris](./readme_resources/Paris.gif)
 
 Un ejemplo en detalle se puede observar en el siguiente vídeo:
-<video src="readme_resources/output_git.mp4" width="320" height="200" controls preload></video>
+<video src="./readme_resources/output_git.mp4" width="320" height="200" controls preload></video>
 
 ## Instalación y uso
 Recuerda que se necesita una webcam para utilizar este programa.
