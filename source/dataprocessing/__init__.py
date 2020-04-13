@@ -69,7 +69,6 @@ class DataProcessor:
         self.threshold = threshold
         self.rescale = rescale
         self.output_stride = output_stride
-
     @staticmethod
     def process_video(filename, input_path=None, output_path=None, output_shape=(257, 257), fps_reduce=2, angle=0):
         """Process a video from the resources folder and saves all the frames
