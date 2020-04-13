@@ -38,7 +38,7 @@ As it can be seen in the image, the skeleton is inferred form the image and an a
 ![Example walk in Paris](./readme_resources/Paris.gif)
 
 A more extensive example can be seen in the video below:
-<video src="./readme_resources/output_git.mp4" width="320" height="200" controls preload></video>
+<video src="./readme_resources/output_git.mp4" poster="./readme_resources/Paris.gif" width="320" height="200" controls preload></video>
 
 
 ## Installation and use
