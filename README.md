@@ -119,3 +119,5 @@ This project is under MIT license. See [LICENSE](LICENSE) for more details.
 - [@tensorflow](https://github.com/tensorflow/) for [Posenet](https://github.com/tensorflow/tfjs-models/tree/master/posenet) models.
 - [@patlevin](https://github.com/patlevin/tfjs-to-tf) for the tools used for creating a session in Python from the graph files.
 - [@ajaichemmanam](https://github.com/ajaichemmanam/simple_posenet_python) for the help provided when struggling with opening graph files with Python.
+- [@felixchenfy](https://github.com/felixchenfy) and his repo [Realtime-Action-Recognition](https://github.com/felixchenfy/Realtime-Action-Recognition)
+for the inspiration.
