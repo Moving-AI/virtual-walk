@@ -50,6 +50,16 @@ Como se puede observar en la imagen, el esqueleto se infiere de la imagen y la a
 ## Instalación y uso
 Recuerda que se necesita una webcam para utilizar este programa.
 
+Se recomienda instalar en un entorno nuevo de Python 3.7 para evitar problemas y conflictos de versiones.
+
+Instala tensorflowjs, requerido para utilizar ResNet
+```
+pip install tensorflowjs
+```
+
+Clona e instala el repositorio [tfjs-to-tf](https://github.com/patlevin/tfjs-to-tf) que incluye las dependencias para
+interpretar modelos de grafo de tensorflowjs.
+
 Clona el repositorio git
 
 ```

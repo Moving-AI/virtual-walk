@@ -40,6 +40,15 @@ As it can be seen in the image, the skeleton is inferred form the image and an a
 ## Installation and use
 Remember that a Webcam is needed to use this program, as actions are predicted from the frames taken with it.
 
+It is recommended to install it in a new Python 3.7 environment to avoid issues and version conflicts.
+
+Install tensorflowjs, required to run ResNet:
+```
+pip install tensorflowjs
+```
+
+Clone and install tensorflowjs graph model converter, following the steps in [tfjs-to-tf](https://github.com/patlevin/tfjs-to-tf)
+
 Clone the git repository
 
 ```
