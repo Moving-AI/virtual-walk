@@ -33,7 +33,7 @@ if __name__ == '__main__':
     for stride in [16, 32]:
         print('Stride ' + str(stride) + '...', end='\n')
         model_cfg = {}
-        model_cfg['tfjs_dir'] = str(Path(__file__).parents[0].joinpath(output_folder + 'stride_' + str(stride)))
+        model_cfg['tfjs_dir'] = str(Path(__file__).parents[0].joinpath(output_folder + 'resnet_stride' + str(stride)))
         model_cfg['filename'] = 'model-stride'+ str(stride)+'.json'
         model_cfg['base_url'] = 'https://storage.googleapis.com/tfjs-models/savedmodel/posenet/resnet50/float/'
         try:

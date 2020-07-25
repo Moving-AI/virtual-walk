@@ -69,7 +69,7 @@ git clone https://github.com/Moving-AI/virtual-walk.git
 Instala las dependencias
 
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Descarga los modelos ejecutando el archivo [download_models](./download_models.py). Este archivo descargará los modelos 

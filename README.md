@@ -58,7 +58,7 @@ git clone https://github.com/Moving-AI/virtual-walk.git
 Install dependencies by running
 
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Download the used models by running the [download_models](./download_models.py) file. This script will download PoseNet

@@ -12,7 +12,8 @@ import cv2
 import numpy as np
 import requests
 import tensorflow as tf
-import tfjs_graph_converter as tfjs
+import tfjs_graph_converter.api as tfjs
+import tfjs_graph_converter.util as tfjsutil
 
 logger = logging.getLogger(__name__)
 
@@ -127,15 +128,15 @@ def infer_model(img, sess, input_tensor, output_tensor_names):
     return results
 
 def get_tensors_graph(graph):
-    input_tensor_names = tfjs.util.get_input_tensors(graph)
-    output_tensor_names = tfjs.util.get_output_tensors(graph)
+    input_tensor_names = tfjsutil.get_input_tensors(graph)
+    output_tensor_names = tfjsutil.get_output_tensors(graph)
     input_tensor = graph.get_tensor_by_name(input_tensor_names[0])
 
     return input_tensor, output_tensor_names
 
 
 def load_model_resnet(model_path):
-    graph = tfjs.api.load_graph_model(model_path)
+    graph = tfjs.load_graph_model(model_path)
     sess = tf.compat.v1.Session(graph=graph)
     return sess, graph
 
