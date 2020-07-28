@@ -61,6 +61,9 @@ Install dependencies by running
 pip install requirements.txt
 ```
 
+Install Firefox and download [Geckodriver](https://github.com/mozilla/geckodriver/releases). Then specify the path in 
+[config_resnet.yml](./config_resnet.yml) under the "driver_path" option.
+
 Download the used models by running the [download_models](./download_models.py) file. This script will download PoseNet
 models (MobileNet and ResNet with both output strides, 16 and 32), LSTM, PCA, scaler and neural network. The link to
 download the models separately can be found below. 

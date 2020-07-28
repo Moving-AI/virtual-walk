@@ -36,7 +36,9 @@ show_skeleton: True
 paths:
   posenet: False
   LSTM: False
-  #If LSTM is not used, this paths are used
+  #If LSTM is not used, these paths are used
   PCA: False
   NN: False
   SCALER: False
+
+driver_path: C:\some\where\geckodriver.exe
