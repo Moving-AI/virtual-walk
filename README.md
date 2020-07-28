@@ -58,7 +58,7 @@ git clone https://github.com/Moving-AI/virtual-walk.git
 Install dependencies by running
 
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Install Firefox and download [Geckodriver](https://github.com/mozilla/geckodriver/releases). Then specify the path in 
