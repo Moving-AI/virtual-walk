@@ -2,7 +2,7 @@
 
 _Para la versión en español, [haz click aquí](README_ES.md)._
 
-During the quarantine we're currently experiencing due to the COVID-19 pandemia our rights to move freely on the street are trimmed in favour of the common wellbeing. People can only go out in certain situations like doing the grocery. Many borders are closed and travelling is almosy totally banned in most countries.
+During the quarantine, we're currently experiencing due to the COVID-19 pandemic our rights to move freely on the street are trimmed in favour of the common wellbeing. People can only go out in certain situations like doing the grocery. Many borders are closed and travelling is almosy totally banned in most countries.
 
 _Virtual Walks_ is a project that uses Pose Estimation models along with LSTM neural networks in order to simulate walks in Google Street View. For pose estimation, [PoseNet](https://www.tensorflow.org/lite/models/pose_estimation/overview) model has been adapted, while for the action detection part, an LSTM model has been developed using [TensorFlow 2.0](https://www.tensorflow.org/).
 
