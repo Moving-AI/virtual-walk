@@ -4,7 +4,7 @@ pandas==1.0.3
 opencv_python==4.2.0.32
 tensorboard==2.2.0
 selenium==3.141.0
-numpy==1.18.2
+numpy==1.22.0
 scikit_learn==0.22.2.post1
 tensorflow==2.2.1
 tfjs_graph_converter==1.0.1
